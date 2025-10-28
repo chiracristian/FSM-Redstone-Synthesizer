@@ -1,2 +1,7 @@
+# Python related
 .venv/
+__pycache__
+
+# Output
 *.litematic
+*.log
