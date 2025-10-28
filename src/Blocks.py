@@ -1,5 +1,6 @@
 #!/bin/python3
 
+from copy import deepcopy
 from enum import Enum
 from tokenize import String
 from typing import Final
@@ -41,6 +42,9 @@ class Block:
 
     def getBlockStates(self) -> dict:
         return None
+    
+    def copy(self):
+        return deepcopy(self)
 
 class Directions(Enum):
     INVALID = None
