@@ -40,11 +40,8 @@ class Block:
     def __init__(self, name: str):
         self.name: str = name
 
-    def getBlockStates(self) -> dict:
-        return None
-    
-    def copy(self):
-        return deepcopy(self)
+    def getBlockStates(self) -> dict[str, str]:
+        return {}
 
 class Directions(Enum):
     INVALID = None
@@ -58,9 +55,15 @@ class WireConnection(Enum):
     SIDE = "side"
     UP = "up"
 
+def boolToString(a: bool):
+    if a:
+        return "true"
+    else:
+        return "false"
+
 class Wire(Block):
     def __init__(self):
-        super().__init__(self, REDSTONE_WIRE)
+        super().__init__(REDSTONE_WIRE)
         self.power: int = 0
         self.energized: bool = False
         self.north_connection: WireConnection = WireConnection.NONE
@@ -68,13 +71,13 @@ class Wire(Block):
         self.east_connection: WireConnection = WireConnection.NONE
         self.west_connection: WireConnection = WireConnection.NONE
 
-    def getBlockStates(self) -> dict:
+    def getBlockStates(self) -> dict[str, str]:
         result: dict = {}
 
         if self.energized:
-            result["power"] = self.power
+            result["power"] = str(self.power)
         else:
-            result["power"] = 0
+            result["power"] = "0"
 
         result["north"] = self.north_connection.value
         result["south"] = self.south_connection.value
@@ -90,16 +93,16 @@ class TorchType(Enum):
 class Torch(Block):
     def __init__(self, torchType: TorchType = TorchType.FLOOR, 
                  facing: Directions = Directions.INVALID):
-        super.__init__(self, torchType.value)
+        super.__init__(torchType.value)
         Final[self.torchType] = torchType
 
         self.lit: bool = True
         self.facing: Directions = facing
 
-    def getBlockStates(self):
+    def getBlockStates(self) -> dict[str, str]:
         result: dict = {}
 
-        result["lit"] = self.lit
+        result["lit"] = boolToString(self.lit)
         if self.torchType is TorchType.WALL:
             result["facing"] = self.facing.value
 
@@ -112,12 +115,12 @@ class Repeater(Block):
         self.powered: bool = powered
         self.locked: bool = locked
 
-    def getBlockStates(self):
+    def getBlockStates(self) -> dict[str, str]:
         result: dict = {}
 
         result["facing"] = self.facing.value
-        result["powered"] = self.powered
-        result["locked"] = self.locked
+        result["powered"] = boolToString(self.powered)
+        result["locked"] = boolToString(self.locked)
     
 class Target(Block):
     def __init__(self):

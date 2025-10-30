@@ -2,6 +2,13 @@
 
 import Blocks
 
+# X+ goes EAST
+# X- goes SOUTH
+# Y+ goes UP
+# Y- goes DOWN
+# Z+ goes SOUTH
+# Z- goes NORTH
+
 class BlockRegion:
     def __init__(self, size_x: int, size_y: int, size_z: int):
         self.size: tuple[int, int, int] = (size_x, size_y, size_z)
@@ -44,8 +51,8 @@ class BlockGrid(BlockRegion):
                         raise BlockGridException(f"Block at ({gx},{gy},{gz}) is out of grid bounds.")
                     
                     # Collision check
-                    if (not allow_overwriting) and self.get(gx, gy, gz).name != "minecraft:air":
+                    if (not allow_overwriting) and self.blocks[gx][gy][gz].name != "minecraft:air":
                         raise BlockGridException(f"Cannot paste block at ({gx},{gy},{gz}): space occupied.")
                     
                     # Paste the block
-                    self.set(gx, gy, gz, block)
+                    self.blocks[gx][gy][gz] = block
