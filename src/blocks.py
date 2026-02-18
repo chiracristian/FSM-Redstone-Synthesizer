@@ -26,6 +26,7 @@ BASE_COMBINATIONAL_BOTTOM = "minecraft:polished_diorite"
 BASE_COMBINATIONAL_IN_HIGH_PIN = "minecraft:sandstone"
 BASE_COMBINATIONAL_IN_LOW_PIN = "minecraft:red_sandstone"
 BASE_COMBINATIONAL_OUTPUT_PIN = "minecraft:prismarie_bricks"
+BASE_SEQUENTIAL = "minecraft:lime_concrete"
 BASE_SEQUENTIAL_D_PIN = "minecraft:lime_concrete"
 BASE_SEQUENTIAL_CLK_PIN = "minecraft:magenta_concrete"
 BASE_SEQUENTIAL_Q_PIN = "minecraft:orange_concrete"
@@ -60,16 +61,60 @@ def bool_to_string(a: bool):
         return "true"
     else:
         return "false"
+    
+WIRE_SIDE_NORTH = 1 << 0
+WIRE_SIDE_SOUTH = 1 << 1
+WIRE_SIDE_EAST = 1 << 2
+WIRE_SIDE_WEST = 1 << 3
+WIRE_UP_NORTH = 1 << 4
+WIRE_UP_SOUTH = 1 << 5
+WIRE_UP_EAST = 1 << 6
+WIRE_UP_WEST = 1 << 7
 
 class Wire(Block):
-    def __init__(self):
+    def set_sides(self, sides: int):
+        # North
+        if sides & WIRE_SIDE_NORTH:
+            self.north_connection = WireConnection.SIDE
+        elif sides & WIRE_UP_NORTH:
+            self.north_connection = WireConnection.UP
+        else:
+            self.north_connection = WireConnection.NONE
+
+        # South
+        if sides & WIRE_SIDE_SOUTH:
+            self.south_connection = WireConnection.SIDE
+        elif sides & WIRE_UP_SOUTH:
+            self.south_connection = WireConnection.UP
+        else:
+            self.south_connection = WireConnection.NONE
+
+        # East
+        if sides & WIRE_SIDE_EAST:
+            self.east_connection = WireConnection.SIDE
+        elif sides & WIRE_UP_EAST:
+            self.east_connection = WireConnection.UP
+        else:
+            self.east_connection = WireConnection.NONE
+
+        # West
+        if sides & WIRE_SIDE_WEST:
+            self.west_connection = WireConnection.SIDE
+        elif sides & WIRE_UP_WEST:
+            self.west_connection = WireConnection.UP
+        else:
+            self.west_connection = WireConnection.NONE
+
+    def __init__(self, sides: int = 0):
         super().__init__(REDSTONE_WIRE)
         self.power: int = 0
         self.energized: bool = False
+
         self.north_connection: WireConnection = WireConnection.NONE
         self.south_connection: WireConnection = WireConnection.NONE
         self.east_connection: WireConnection = WireConnection.NONE
         self.west_connection: WireConnection = WireConnection.NONE
+        self.set_sides(sides)
 
     def get_block_states(self) -> dict[str, str]:
         result: dict = {}
@@ -93,8 +138,8 @@ class TorchType(Enum):
 class Torch(Block):
     def __init__(self, torch_type: TorchType = TorchType.FLOOR, 
                  facing: Directions = Directions.INVALID):
-        super.__init__(torch_type.value)
-        Final[self.torchType] = torch_type
+        super().__init__(torch_type.value)
+        self.torch_type = torch_type
 
         self.lit: bool = True
         self.facing: Directions = facing
@@ -103,7 +148,7 @@ class Torch(Block):
         result: dict = {}
 
         result["lit"] = bool_to_string(self.lit)
-        if self.torchType is TorchType.WALL:
+        if self.torch_type is TorchType.WALL:
             result["facing"] = self.facing.value
 
         return result
@@ -121,10 +166,24 @@ class Repeater(Block):
         result["facing"] = self.facing.value
         result["powered"] = bool_to_string(self.powered)
         result["locked"] = bool_to_string(self.locked)
+
+        return result
+
+class Comparator(Block):
+    def __init__(self, facing: Directions):
+        super().__init__(COMPARATOR)
+        self.facing: Directions = facing
+
+    def get_block_states(self) -> dict[str, str]:
+        result: dict = {}
+
+        result["facing"] = self.facing.value
+
+        return result
     
 class Dropper(Block):
     def __init__(self, facing: Directions, triggered: bool = False):
-        super.__init__(DROPPER)
+        super().__init__(DROPPER)
         self.facing: Directions = facing
         self.triggered: bool = triggered
 
@@ -134,3 +193,4 @@ class Dropper(Block):
         result["facing"] = self.facing.value
         result["triggered"] = bool_to_string(self.triggered)
 
+        return result
