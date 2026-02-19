@@ -11,9 +11,11 @@ class ProductTermGate(BlockGrid):
                 pass
             
             case LiteralState.POSITIVE:
-                # Place a torch
+                # Place a torch and connect it to the rail
                 self.blocks[current_x][1][2] = Block(BASE_COMBINATIONAL_BOTTOM)
                 self.blocks[current_x][2][2] = Torch(TorchType.FLOOR)
+                self.blocks[current_x][2][3].north_connection = WireConnection.SIDE
+                self.propagate_power_from_torch(current_x, 2, 2)
 
                 # Place the connection, one level lower
                 self.blocks[current_x][0][1] = Block(BASE_COMBINATIONAL_BOTTOM)
@@ -26,6 +28,7 @@ class ProductTermGate(BlockGrid):
                 # Place a wire in the upper part
                 self.blocks[current_x][1][2] = Block(BASE_COMBINATIONAL_BOTTOM)
                 self.blocks[current_x][2][2] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
+                self.blocks[current_x][2][3].north_connection = WireConnection.SIDE
 
                 # Place the connection, one level lower, with a repeater
                 self.blocks[current_x][0][1] = Block(BASE_COMBINATIONAL_BOTTOM)
@@ -40,19 +43,14 @@ class ProductTermGate(BlockGrid):
         size_z = 5
         super().__init__(size_x, size_y, size_z)
 
-        # Put the output torch
-        out_torch_x = size_x // 2
-        self.blocks[out_torch_x][1][4] = Torch(TorchType.WALL, Directions.SOUTH)
-
         # Put the output rail
         for x in range(0, size_x):
             self.blocks[x][1][3] = Block(BASE_COMBINATIONAL_BOTTOM)
+            self.blocks[x][2][3] = Wire(WIRE_SIDE_EAST | WIRE_SIDE_WEST)
             if x == 0:
-                self.blocks[x][2][3] = Wire(WIRE_SIDE_EAST | WIRE_SIDE_NORTH)
-            elif x == size_x - 1:
-                self.blocks[x][2][3] = Wire(WIRE_SIDE_WEST | WIRE_SIDE_NORTH)
-            else:
-                self.blocks[x][2][3] = Wire(WIRE_SIDE_EAST | WIRE_SIDE_WEST)
+                self.blocks[x][2][3].west_connection = WireConnection.NONE
+            if x == size_x - 1:
+                self.blocks[x][2][3].east_connection = WireConnection.NONE
 
         # Now put the input variables pins
         current_x = size_x - 1
@@ -64,3 +62,11 @@ class ProductTermGate(BlockGrid):
         for state_var in term.states:
             self.place_pin(current_x, state_var)
             current_x -= 2
+
+        # Put the output torch
+        out_torch_x = size_x // 2
+        self.blocks[out_torch_x][1][4] = Torch(TorchType.WALL, Directions.SOUTH)
+
+        # Turn off the torch if the output rail is energized
+        if (self.blocks[out_torch_x][2][3].is_energized()):
+            self.blocks[out_torch_x][1][4].lit = False
