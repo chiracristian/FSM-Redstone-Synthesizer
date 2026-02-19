@@ -70,6 +70,7 @@ WIRE_UP_NORTH = 1 << 4
 WIRE_UP_SOUTH = 1 << 5
 WIRE_UP_EAST = 1 << 6
 WIRE_UP_WEST = 1 << 7
+MAX_WIRE_POWER = 15
 
 class Wire(Block):
     def set_sides(self, sides: int):
@@ -108,7 +109,6 @@ class Wire(Block):
     def __init__(self, sides: int = 0):
         super().__init__(REDSTONE_WIRE)
         self.power: int = 0
-        self.energized: bool = False
 
         self.north_connection: WireConnection = WireConnection.NONE
         self.south_connection: WireConnection = WireConnection.NONE
@@ -116,13 +116,13 @@ class Wire(Block):
         self.west_connection: WireConnection = WireConnection.NONE
         self.set_sides(sides)
 
+    def is_energized(self) -> bool:
+        return self.power > 0
+
     def get_block_states(self) -> dict[str, str]:
         result: dict = {}
 
-        if self.energized:
-            result["power"] = str(self.power)
-        else:
-            result["power"] = "0"
+        result["power"] = str(self.power)
 
         result["north"] = self.north_connection.value
         result["south"] = self.south_connection.value
