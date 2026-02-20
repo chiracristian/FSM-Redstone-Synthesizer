@@ -32,7 +32,7 @@ BASE_SEQUENTIAL_CLK_PIN = "minecraft:magenta_concrete"
 BASE_SEQUENTIAL_Q_PIN = "minecraft:orange_concrete"
 
 # Customizable transparent blocks
-BASE_UPWARDS_COMBINATIONAL_WIRING = "minecraft:white_stained_glass"
+BASE_COMBINATIONAL_TRANSPARENT = "minecraft:white_stained_glass"
 
 # -----------------------------------------------------------------------------
 # Definition of block classes
@@ -137,11 +137,12 @@ class TorchType(Enum):
 
 class Torch(Block):
     def __init__(self, torch_type: TorchType = TorchType.FLOOR, 
-                 facing: Directions = Directions.INVALID):
+                 facing: Directions = Directions.INVALID,
+                 lit: bool = True):
         super().__init__(torch_type.value)
         self.torch_type = torch_type
 
-        self.lit: bool = True
+        self.lit: bool = lit
         self.facing: Directions = facing
 
     def get_block_states(self) -> dict[str, str]:
