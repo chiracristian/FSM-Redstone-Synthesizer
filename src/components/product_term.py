@@ -4,6 +4,9 @@ from blocks import *
 from block_grid import BlockGrid
 from logic.sop_expression import ProductTerm, LiteralState
 
+PRODUCT_TERM_HEIGHT = 3
+PRODUCT_TERM_DEPTH = 5
+
 class ProductTermGate(BlockGrid):
     def place_pin(self, current_x: int, literal: LiteralState):
         match literal:
@@ -38,9 +41,11 @@ class ProductTermGate(BlockGrid):
                 self.blocks[current_x][1][0] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
 
     def __init__(self, term: ProductTerm):
-        size_x = 2 * (len(term.inputs) + len(term.states)) - 1
-        size_y = 3
-        size_z = 5
+        self.input_pins_count = len(term.inputs) + len(term.states)
+
+        size_x = 2 * self.input_pins_count - 1
+        size_y = PRODUCT_TERM_HEIGHT
+        size_z = PRODUCT_TERM_DEPTH
         super().__init__(size_x, size_y, size_z)
 
         # Put the output rail
@@ -64,9 +69,9 @@ class ProductTermGate(BlockGrid):
             current_x -= 2
 
         # Put the output torch
-        out_torch_x = size_x // 2
-        self.blocks[out_torch_x][1][4] = Torch(TorchType.WALL, Directions.SOUTH)
+        self.out_torch_x = size_x // 2
+        self.blocks[self.out_torch_x][1][4] = Torch(TorchType.WALL, Directions.SOUTH)
 
         # Turn off the torch if the output rail is energized
-        if (self.blocks[out_torch_x][2][3].is_energized()):
-            self.blocks[out_torch_x][1][4].lit = False
+        if (self.blocks[self.out_torch_x][2][3].is_energized()):
+            self.blocks[self.out_torch_x][1][4].lit = False

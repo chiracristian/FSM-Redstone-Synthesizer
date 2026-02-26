@@ -3,6 +3,10 @@
 from blocks import *
 from block_grid import BlockGrid
 
+UPWARDS_WIRE_WIDTH = 1
+UPWARDS_WIRE_DEPTH = 6
+EFFECTIVE_UPWARDS_WIRE_DEPTH = UPWARDS_WIRE_DEPTH - 2
+
 class UpwardsWire(BlockGrid):
     def add_vertical_repeater(self, y: int, z: int, facing: Directions):
         direction = 0
@@ -30,9 +34,9 @@ class UpwardsWire(BlockGrid):
         self.blocks[0][y + 3][z + direction] = Torch(TorchType.WALL, torch_facing, False)
 
     def __init__(self, height: int, facing: Directions):
-        size_x = 1
+        size_x = UPWARDS_WIRE_WIDTH
         size_y = height + 1
-        size_z = 6
+        size_z = UPWARDS_WIRE_DEPTH
         super().__init__(size_x, size_y, size_z)
 
         y_offset = 0

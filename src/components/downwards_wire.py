@@ -2,19 +2,23 @@
 
 from blocks import *
 from block_grid import BlockGrid
+from components.product_term import PRODUCT_TERM_HEIGHT
+
+DOWNWARDS_OR_WIRE_WIDTH = 3
+DOWNWARDS_OR_WIRE_DEPTH = 4
 
 class DownwardsOrWire(BlockGrid):
-    def __init__(self, inputs_count: int):
-        size_x = 3
-        size_y = 3 * inputs_count + 1
-        size_z = 4
+    def __init__(self, gates_count: int):
+        size_x = DOWNWARDS_OR_WIRE_WIDTH
+        size_y = PRODUCT_TERM_HEIGHT * gates_count + 1
+        size_z = DOWNWARDS_OR_WIRE_DEPTH
 
         super().__init__(size_x, size_y, size_z)
 
-        for i in range(inputs_count):
+        for i in range(gates_count):
             current_built_step = i
-            from_top_idx = inputs_count - 1 - i
-            torch_y = 3 * from_top_idx + 1
+            from_top_idx = gates_count - 1 - i
+            torch_y = PRODUCT_TERM_HEIGHT * from_top_idx + 1
 
             # Place the block and wire next to the torch
             self.blocks[2][torch_y - 1][0] = Block(BASE_COMBINATIONAL_BOTTOM)

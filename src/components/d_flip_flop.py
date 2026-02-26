@@ -3,12 +3,13 @@
 from blocks import *
 from block_grid import BlockGrid
 
-D_FLIP_FLOP_SIZE_X = 6
-D_FLIP_FLOP_SIZE_Y = 3
-D_FLIP_FLOP_SIZE_Z = 4
+D_FLIP_FLOP_WIDTH = 6
+D_FLIP_FLOP_HEIGHT = 3
+D_FLIP_FLOP_DEPTH = 4
+
 class DFlipFlop(BlockGrid):
     def __init__(self):
-        super().__init__(D_FLIP_FLOP_SIZE_X, D_FLIP_FLOP_SIZE_Y, D_FLIP_FLOP_SIZE_Z)
+        super().__init__(D_FLIP_FLOP_WIDTH, D_FLIP_FLOP_HEIGHT, D_FLIP_FLOP_DEPTH)
 
         # Place base plate
         for x in range (0, 4):
