@@ -9,6 +9,10 @@ EFFECTIVE_UPWARDS_WIRE_DEPTH = UPWARDS_WIRE_DEPTH - 2
 
 class UpwardsWire(BlockGrid):
     def add_vertical_repeater(self, y: int, z: int, facing: Directions):
+        # Do not add repeater if we would go out of bounds
+        if self.is_out_of_bounds(0, y + 3, 0):
+            return
+
         direction = 0
         torch_facing = Directions.INVALID
         match facing:
