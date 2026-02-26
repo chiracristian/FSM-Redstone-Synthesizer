@@ -45,6 +45,10 @@ class BlockGrid:
         # Only propagate through wires
         if not isinstance(block, Wire):
             return
+        
+        # Stop if power is exhausted
+        if power <= 0:
+            return
 
         # Only proceed if we are actually increasing the power level
         if block.power >= power:
@@ -53,23 +57,19 @@ class BlockGrid:
         # Set the power
         block.power = power
 
-        # Stop if power is exhausted
-        if power <= 1:
-            return
-
         # Map connections to relative coordinate offsets
         # Connection name -> (dx, dy_offset, dz)
         directions = {
-            "north": (0, 0, -1),
-            "south": (0, 0, 1),
-            "east":  (1, 0, 0),
-            "west":  (-1, 0, 0)
+            Directions.NORTH: (0, 0, -1),
+            Directions.SOUTH: (0, 0, 1),
+            Directions.EAST:  (1, 0, 0),
+            Directions.WEST:  (-1, 0, 0)
         }
 
         states = block.get_block_states()
 
         for side, (dx, dy, dz) in directions.items():
-            conn_type = states.get(side)
+            conn_type = states.get(side.value)
 
             nx, ny, nz = 0, 0, 0
             check_down = False
@@ -82,12 +82,13 @@ class BlockGrid:
                 # Climbing up a block
                 nx, ny, nz = x + dx, y + 1, z + dz
 
-            # Propagate through the connection or prune it
-            # if not self.is_out_of_bounds(nx, ny, nz) and isinstance(self.blocks[nx][ny][nz], Wire):
-            #     self.propagate_power_through_wires(nx, ny, nz, power - 1)
-            # else:
-            #     self.set_wire_connection(x, y, z, side, WireConnection.NONE)
+            # Propagate through the connection
             self.propagate_power_through_wires(nx, ny, nz, power - 1)
+
+            # Propagate through repeater, if facing correspondingly
+            if isinstance(self.blocks[nx][ny][nz], Repeater):
+                if self.blocks[nx][ny][nz].facing == side:
+                    self.propagate_power_from_repeater(nx, ny, nz)
             
             # Redstone automatically connects down if there is a wire below 
             # and no solid block in the way.
@@ -95,7 +96,7 @@ class BlockGrid:
                 if y > 0 and self.blocks[nx][ny][nz].name == AIR:
                     down_block = self.blocks[nx][ny - 1][nz]
                     if isinstance(down_block, Wire):
-                        self.propagate_power_through_wires(nz, ny - 1, nz, power - 1)
+                        self.propagate_power_through_wires(nx, ny - 1, nz, power - 1)
 
     def propagate_power_from_torch(self, x: int, y: int, z: int):
         block = self.blocks[x][y][z]
@@ -127,6 +128,29 @@ class BlockGrid:
         for nx, ny, nz in neighbors:
             if not self.is_out_of_bounds(nx, ny, nz):
                 self.propagate_power_through_wires(nx, ny, nz, MAX_WIRE_POWER)
+
+    def propagate_power_from_repeater(self, x: int, y: int, z: int):
+        block = self.blocks[x][y][z]
+        if not isinstance(block, Repeater):
+            return
+        
+        # The repeater gets powered
+        block.powered = True
+
+        # A repeater outputs power 15 in its 'facing' direction
+        offsets = {
+            Directions.NORTH: (0, 0, 1),
+            Directions.SOUTH: (0, 0, -1),
+            Directions.EAST:  (-1, 0, 0),
+            Directions.WEST:  (1, 0, 0)
+        }
+        
+        dx, dy, dz = offsets.get(block.facing, (0, 0, 0))
+        nx, ny, nz = x + dx, y, z + dz
+
+        if not self.is_out_of_bounds(nx, ny, nz):
+            # Refresh signal to MAX_WIRE_POWER
+            self.propagate_power_through_wires(nx, ny, nz, MAX_WIRE_POWER)
 
     def paste(self, pasted_grid: "BlockGrid", 
               offset_x: int, offset_y: int, offset_z: int,
