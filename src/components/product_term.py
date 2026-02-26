@@ -18,7 +18,7 @@ class ProductTermGate(BlockGrid):
                 self.blocks[current_x][1][2] = Block(BASE_COMBINATIONAL_BOTTOM)
                 self.blocks[current_x][2][2] = Torch(TorchType.FLOOR)
                 self.blocks[current_x][2][3].north_connection = WireConnection.SIDE
-                self.propagate_power_from_torch(current_x, 2, 2)
+                self.torches_positions.append((current_x, 2, 2))
 
                 # Place the connection, one level lower
                 self.blocks[current_x][0][1] = Block(BASE_COMBINATIONAL_BOTTOM)
@@ -57,6 +57,8 @@ class ProductTermGate(BlockGrid):
             if x == size_x - 1:
                 self.blocks[x][2][3].east_connection = WireConnection.NONE
 
+        self.torches_positions: list[tuple[int, int, int]] = []
+
         # Now put the input variables pins
         current_x = size_x - 1
         for input_var in term.inputs:
@@ -67,6 +69,10 @@ class ProductTermGate(BlockGrid):
         for state_var in term.states:
             self.place_pin(current_x, state_var)
             current_x -= 2
+
+        # Propagate the signals from the torches
+        for pos in self.torches_positions:
+            self.propagate_power_from_torch(pos[0], pos[1], pos[2])
 
         # Put the output torch
         self.out_torch_x = size_x // 2
