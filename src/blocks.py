@@ -22,17 +22,22 @@ DROPPER = "minecraft:dropper"
 # Customizable solid blocks
 BASE_PLATE = "minecraft:quartz_block"
 BASE_INTERCONNECTION = "minecraft:polished_andesite"
-BASE_COMBINATIONAL_BOTTOM = "minecraft:polished_diorite"
-BASE_COMBINATIONAL_IN_HIGH_PIN = "minecraft:sandstone"
-BASE_COMBINATIONAL_IN_LOW_PIN = "minecraft:red_sandstone"
-BASE_COMBINATIONAL_OUTPUT_PIN = "minecraft:prismarie_bricks"
+
+BASE_INPUT_VAR = "minecraft:prismarine_bricks"
+BASE_STATE_VARIABLE = "minecraft:gold_block"
+BASE_COMBINATIONAL_BOTTOM = "minecraft:smooth_stone"
+BASE_PRODUCT_TERM = "minecraft:polished_diorite"
+BASE_DOWNWARDS_OR = "minecraft:polished_andesite"
+
 BASE_SEQUENTIAL = "minecraft:lime_concrete"
 BASE_SEQUENTIAL_D_PIN = "minecraft:lime_concrete"
 BASE_SEQUENTIAL_CLK_PIN = "minecraft:magenta_concrete"
 BASE_SEQUENTIAL_Q_PIN = "minecraft:orange_concrete"
 
 # Customizable transparent blocks
-BASE_COMBINATIONAL_TRANSPARENT = "minecraft:white_stained_glass"
+BASE_UPWARDS_WIRE = "minecraft:white_stained_glass"
+BASE_UPWARDS_INPUT_VAR = "minecraft:cyan_stained_glass"
+BASE_UPWARDS_STATE_VAR = "minecraft:yellow_stained_glass"
 
 # -----------------------------------------------------------------------------
 # Definition of block classes

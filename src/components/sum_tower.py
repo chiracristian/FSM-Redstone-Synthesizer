@@ -11,14 +11,14 @@ from components.downwards_wire import *
 
 class SumTower(BlockGrid):
     def __init__(self, expression: SOPExpression):
-
         product_term_gates: List[ProductTermGate] = []
         for term in expression.terms:
             product_term_gates.append(ProductTermGate(term))
 
         gate_width = product_term_gates[0].size[0]
         gate_count = len(product_term_gates)
-        variables_count = product_term_gates[0].input_pins_count
+        input_vars_count = product_term_gates[0].inputs_count
+        state_vars_count = product_term_gates[0].state_vars_count
 
         # 4 is the minimal width, in case we have only one state variable and input
         size_x = max(4, gate_width)
@@ -33,14 +33,24 @@ class SumTower(BlockGrid):
             self.paste(gate, 0, current_y, EFFECTIVE_UPWARDS_WIRE_DEPTH)
             current_y += PRODUCT_TERM_HEIGHT
 
-        # Create the upward input wires
-        input_wire = UpwardsWire(current_y - 2, Directions.NORTH)
+        # Create the upward wires
+        input_var_wire = UpwardsWire(current_y - 2, Directions.NORTH, Block(BASE_UPWARDS_INPUT_VAR))
+        state_var_wire = UpwardsWire(current_y - 2, Directions.NORTH, Block(BASE_UPWARDS_STATE_VAR))
 
-        # Place the input wires (with repeaters in front)
-        for x in range(0, 2 * variables_count, 2):
-            self.blocks[x][0][1] = Block(BASE_COMBINATIONAL_BOTTOM)
+        # Place the vertical wires (with repeaters in front)
+        x = 0
+
+        for _ in range(0, state_vars_count):
+            self.blocks[x][0][1] = Block(BASE_STATE_VARIABLE)
             self.blocks[x][1][1] = Repeater(Directions.NORTH)
-            self.paste(input_wire, x, 0, 0)
+            self.paste(state_var_wire, x, 0, 0)
+            x += 2
+
+        for _ in range(0, input_vars_count):
+            self.blocks[x][0][1] = Block(BASE_INPUT_VAR)
+            self.blocks[x][1][1] = Repeater(Directions.NORTH)
+            self.paste(input_var_wire, x, 0, 0)
+            x += 2
 
         # Build and place the downwards wire
         downwards_wire = DownwardsOrWire(gate_count)

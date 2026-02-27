@@ -37,7 +37,7 @@ class UpwardsWire(BlockGrid):
         self.blocks[0][y + 3][z + 2 * direction] = Block(BASE_COMBINATIONAL_BOTTOM)
         self.blocks[0][y + 3][z + direction] = Torch(TorchType.WALL, torch_facing, False)
 
-    def __init__(self, height: int, facing: Directions):
+    def __init__(self, height: int, facing: Directions, transparent_block: Block):
         size_x = UPWARDS_WIRE_WIDTH
         size_y = height + 1
         size_z = UPWARDS_WIRE_DEPTH
@@ -59,11 +59,11 @@ class UpwardsWire(BlockGrid):
             # Put the glass with a wire on top
             if y % 2 == 0:
                 z = 2
-                self.blocks[0][y][z] = Block(BASE_COMBINATIONAL_TRANSPARENT)
+                self.blocks[0][y][z] = transparent_block
                 self.blocks[0][y + 1][z] = Wire(WIRE_SIDE_NORTH | WIRE_UP_SOUTH)
             else:
                 z = 3
-                self.blocks[0][y][z] = Block(BASE_COMBINATIONAL_TRANSPARENT)
+                self.blocks[0][y][z] = transparent_block
                 self.blocks[0][y + 1][z] = Wire(WIRE_UP_NORTH | WIRE_SIDE_SOUTH)
 
             # Every 10 blocks put a repeater

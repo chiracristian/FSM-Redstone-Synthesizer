@@ -12,6 +12,7 @@ class DownwardsOrWire(BlockGrid):
         size_x = DOWNWARDS_OR_WIRE_WIDTH
         size_y = PRODUCT_TERM_HEIGHT * gates_count + 1
         size_z = DOWNWARDS_OR_WIRE_DEPTH
+        base_block = Block(BASE_DOWNWARDS_OR)
 
         super().__init__(size_x, size_y, size_z)
 
@@ -21,7 +22,7 @@ class DownwardsOrWire(BlockGrid):
             torch_y = PRODUCT_TERM_HEIGHT * from_top_idx + 1
 
             # Place the block and wire next to the torch
-            self.blocks[2][torch_y - 1][0] = Block(BASE_COMBINATIONAL_BOTTOM)
+            self.blocks[2][torch_y - 1][0] = base_block
             if current_built_step != 0:
                 self.blocks[2][torch_y][0] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH | WIRE_SIDE_WEST)
             else:
@@ -30,9 +31,9 @@ class DownwardsOrWire(BlockGrid):
             # If at the bottom, place an output pin and stop
             if from_top_idx == 0:
                 # Place 3 blocks in a line
-                self.blocks[2][torch_y - 1][1] = Block(BASE_COMBINATIONAL_BOTTOM)
-                self.blocks[2][torch_y - 1][2] = Block(BASE_COMBINATIONAL_BOTTOM)
-                self.blocks[2][torch_y - 1][3] = Block(BASE_COMBINATIONAL_BOTTOM)
+                self.blocks[2][torch_y - 1][1] = base_block
+                self.blocks[2][torch_y - 1][2] = base_block
+                self.blocks[2][torch_y - 1][3] = base_block
                 
                 # Place two straight wires
                 self.blocks[2][torch_y][1] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
@@ -43,12 +44,12 @@ class DownwardsOrWire(BlockGrid):
                 break
 
             # Place the block one level down
-            self.blocks[2][torch_y - 2][1] = Block(BASE_COMBINATIONAL_BOTTOM)
+            self.blocks[2][torch_y - 2][1] = base_block
             self.blocks[2][torch_y - 1][1] = Wire(WIRE_UP_NORTH | WIRE_SIDE_WEST)
 
             # Place the staircase blocks to the side
-            self.blocks[1][torch_y - 3][1] = Block(BASE_COMBINATIONAL_BOTTOM)
-            self.blocks[1][torch_y - 4][0] = Block(BASE_COMBINATIONAL_BOTTOM)
+            self.blocks[1][torch_y - 3][1] = base_block
+            self.blocks[1][torch_y - 4][0] = base_block
 
             # Put repeater at every 3rd step (except the first and last)
             is_not_first = current_built_step != 0
@@ -57,8 +58,8 @@ class DownwardsOrWire(BlockGrid):
 
             if is_not_first and is_not_last and is_3rd_step:
                 # Extend out the stair
-                self.blocks[0][torch_y - 3][1] = Block(BASE_COMBINATIONAL_BOTTOM)
-                self.blocks[0][torch_y - 4][0] = Block(BASE_COMBINATIONAL_BOTTOM)
+                self.blocks[0][torch_y - 3][1] = base_block
+                self.blocks[0][torch_y - 4][0] = base_block
 
                 # Add the wires
                 self.blocks[1][torch_y - 2][1] = Wire(WIRE_UP_EAST | WIRE_SIDE_WEST)

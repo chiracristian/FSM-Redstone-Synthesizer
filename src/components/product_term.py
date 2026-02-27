@@ -8,6 +8,8 @@ PRODUCT_TERM_HEIGHT = 3
 PRODUCT_TERM_DEPTH = 5
 
 class ProductTermGate(BlockGrid):
+    base_block = Block(BASE_PRODUCT_TERM)
+
     def place_pin(self, current_x: int, literal: LiteralState):
         match literal:
             case LiteralState.ABSENT:
@@ -15,42 +17,45 @@ class ProductTermGate(BlockGrid):
             
             case LiteralState.POSITIVE:
                 # Place a torch and connect it to the rail
-                self.blocks[current_x][1][2] = Block(BASE_COMBINATIONAL_BOTTOM)
+                self.blocks[current_x][1][2] = self.base_block
                 self.blocks[current_x][2][2] = Torch(TorchType.FLOOR)
                 self.blocks[current_x][2][3].north_connection = WireConnection.SIDE
                 self.torches_positions.append((current_x, 2, 2))
 
                 # Place the connection, one level lower
-                self.blocks[current_x][0][1] = Block(BASE_COMBINATIONAL_BOTTOM)
-                self.blocks[current_x][0][0] = Block(BASE_COMBINATIONAL_BOTTOM)
+                self.blocks[current_x][0][1] = self.base_block
+                self.blocks[current_x][0][0] = self.base_block
 
                 self.blocks[current_x][1][1] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
                 self.blocks[current_x][1][0] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
 
             case LiteralState.NEGATED:
                 # Place a wire in the upper part
-                self.blocks[current_x][1][2] = Block(BASE_COMBINATIONAL_BOTTOM)
+                self.blocks[current_x][1][2] = self.base_block
                 self.blocks[current_x][2][2] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
                 self.blocks[current_x][2][3].north_connection = WireConnection.SIDE
 
                 # Place the connection, one level lower, with a repeater
-                self.blocks[current_x][0][1] = Block(BASE_COMBINATIONAL_BOTTOM)
-                self.blocks[current_x][0][0] = Block(BASE_COMBINATIONAL_BOTTOM)
+                self.blocks[current_x][0][1] = self.base_block
+                self.blocks[current_x][0][0] = self.base_block
                 self.blocks[current_x][1][1] = Repeater(Directions.NORTH)
 
                 self.blocks[current_x][1][0] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
 
     def __init__(self, term: ProductTerm):
-        self.input_pins_count = len(term.inputs) + len(term.states)
+        self.inputs_count = len(term.inputs)
+        self.state_vars_count = len(term.states)
 
-        size_x = 2 * self.input_pins_count - 1
+        self.pins_count = self.inputs_count + self.state_vars_count
+
+        size_x = 2 * self.pins_count - 1
         size_y = PRODUCT_TERM_HEIGHT
         size_z = PRODUCT_TERM_DEPTH
         super().__init__(size_x, size_y, size_z)
 
         # Put the output rail
         for x in range(0, size_x):
-            self.blocks[x][1][3] = Block(BASE_COMBINATIONAL_BOTTOM)
+            self.blocks[x][1][3] = self.base_block
             self.blocks[x][2][3] = Wire(WIRE_SIDE_EAST | WIRE_SIDE_WEST)
             if x == 0:
                 self.blocks[x][2][3].west_connection = WireConnection.NONE
