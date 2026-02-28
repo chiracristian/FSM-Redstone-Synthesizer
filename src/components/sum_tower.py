@@ -1,7 +1,5 @@
 #!/bin/python3
 
-from typing import List
-
 from blocks import *
 from block_grid import BlockGrid
 from logic.sop_expression import *
@@ -11,7 +9,7 @@ from components.downwards_wire import *
 
 class SumTower(BlockGrid):
     def __init__(self, expression: SOPExpression):
-        product_term_gates: List[ProductTermGate] = []
+        product_term_gates: list[ProductTermGate] = []
         for term in expression.terms:
             product_term_gates.append(ProductTermGate(term))
 

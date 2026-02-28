@@ -1,5 +1,4 @@
 import json
-from typing import List, Dict, Any
 
 class TransitionTable:
     def __init__(self, num_inputs: int, num_states: int, num_outputs: int):
@@ -8,7 +7,7 @@ class TransitionTable:
         self.num_outputs = num_outputs
         
         # The table is a list of dictionaries representing each row
-        self.rows: List[Dict[str, List[int]]] = []
+        self.rows: list[dict[str, list[int]]] = []
 
     @classmethod
     def from_json(cls, file_path: str) -> 'TransitionTable':
@@ -41,7 +40,7 @@ class TransitionTable:
             
         return table
 
-    def get_next_state(self, current_state: List[int], inputs: List[int]) -> List[int]:
+    def get_next_state(self, current_state: list[int], inputs: list[int]) -> list[int]:
         """Lookup delta(s, i)"""
         for row in self.rows:
             if row["state_t"] == current_state and row["input"] == inputs:

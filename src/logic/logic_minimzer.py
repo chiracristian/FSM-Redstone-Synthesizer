@@ -1,11 +1,10 @@
 from pyeda.inter import *
-from pyeda.boolalg.expr import ExprComplement, ExprVariable, Or, And
-from typing import List, Dict
+from pyeda.boolalg.expr import ExprComplement, Or, And
 from transition_table import TransitionTable
 
 from sop_expression import SOPExpression, ProductTerm, LiteralState
 
-def synthesize_logic(table: TransitionTable) -> Dict[str, SOPExpression]:
+def synthesize_logic(table: TransitionTable) -> dict[str, SOPExpression]:
     """
     Returns a dictionary mapping 'QN_next' and 'OUT_N' to minimized SOPExpressions.
     """

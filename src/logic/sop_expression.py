@@ -1,5 +1,4 @@
 from enum import Enum, auto
-from typing import List
 
 class LiteralState(Enum):
     ABSENT = auto()   # Variable is not in the product (Don't care)
@@ -8,7 +7,7 @@ class LiteralState(Enum):
 
 class ProductTerm:
     """Represents a single AND gate (e.g., I0 & !Q1 & Q2)"""
-    def __init__(self, inputs: List[LiteralState], states: List[LiteralState]):
+    def __init__(self, inputs: list[LiteralState], states: list[LiteralState]):
         self.inputs = inputs  # Matches the length of num_inputs
         self.states = states  # Matches the length of num_state_vars
 
@@ -18,7 +17,7 @@ class ProductTerm:
 class SOPExpression:
     """Represents an OR of multiple ProductTerms"""
     def __init__(self):
-        self.terms: List[ProductTerm] = []
+        self.terms: list[ProductTerm] = []
 
     def add_term(self, term: ProductTerm):
         self.terms.append(term)
