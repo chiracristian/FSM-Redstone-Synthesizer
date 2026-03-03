@@ -1,68 +1,86 @@
 from pyeda.inter import *
-from pyeda.boolalg.expr import ExprComplement, Or, And
-from transition_table import TransitionTable
+from pyeda.boolalg.expr import Complement, Or, And
+from pyeda.inter import *
+from pyeda.boolalg.expr import OrOp, AndOp
 
-from sop_expression import SOPExpression, ProductTerm, LiteralState
+from logic.transition_table import TransitionTable
+from logic.sop_expression import *
 
-def synthesize_logic(table: TransitionTable) -> dict[str, SOPExpression]:
+def synthesize_logic(table: TransitionTable) -> dict[SOPOutput, SOPExpression]:
     """
-    Returns a dictionary mapping 'QN_next' and 'OUT_N' to minimized SOPExpressions.
+    Returns a dictionary mapping SOPOutput objects to minimized SOPExpressions.
     """
-    # 1. Define PyEDA variables
     inputs = [exprvar(f'i{i}') for i in range(table.num_inputs)]
     states = [exprvar(f's{i}') for i in range(table.num_state_vars)]
     
-    # 2. Build the truth table mapping
-    # We need to solve for each Next State bit and each Output bit separately
     num_targets = table.num_state_vars + table.num_outputs
     expressions = {}
 
     for bit_index in range(num_targets):
-        # Determine if we are targeting a Next State bit or an Output bit
-        is_state = bit_index < table.num_state_vars
-        label = f"q{bit_index}_next" if is_state else f"out{bit_index - table.num_state_vars}"
+        # 1. Create the structured key
+        if bit_index < table.num_state_vars:
+            output_key = SOPOutput(SOPOutputType.NEXT_STATE_VARIABLE, bit_index)
+            target_bit_idx = bit_index
+        else:
+            idx = bit_index - table.num_state_vars
+            output_key = SOPOutput(SOPOutputType.EXTERNAL_OUTPUT, idx)
+            target_bit_idx = idx
         
-        # Build the ON-set for Espresso
-        on_set = []
+        # 2. Build ON-set as before
+        on_set_exprs = []
         for row in table.rows:
-            target_bits = row["state_next"] if is_state else row["output"]
-            if target_bits[bit_index if is_state else (bit_index - table.num_state_vars)] == 1:
-                # Combine input and state_t bits to form the minterm
+            target_bits = row["state_next"] if bit_index < table.num_state_vars else row["output"]
+            if target_bits[target_bit_idx] == 1:
                 combined_bits = row["input"] + row["state_t"]
-                on_set.append("".join(map(str, combined_bits)))
+                minterm_lits = []
+                for i, bit in enumerate(combined_bits):
+                    var = (inputs + states)[i]
+                    minterm_lits.append(var if bit == 1 else ~var)
+                on_set_exprs.append(And(*minterm_lits))
         
-        # 3. Minimize using Espresso
-        # truthtable takes variables and the ON-set strings
-        tt = truthtable(inputs + states, on_set)
-        minimized_expr, = espresso_exprs(tt.to_expr())
+        # 3. Minimize
+        if not on_set_exprs:
+            minimized_expr = expr(0) 
+        else:
+            minimized_results = espresso_exprs(Or(*on_set_exprs))
+            minimized_expr = minimized_results[0]
         
-        # 4. Convert PyEDA Expression back to SOPExpression class
-        expressions[label] = _convert_to_sop(minimized_expr, table.num_inputs, table.num_state_vars)
+        # 4. Store using the SOPOutput object
+        expressions[output_key] = _convert_to_sop(minimized_expr, table.num_inputs, table.num_state_vars)
 
     return expressions
 
 def _convert_to_sop(pyeda_expr, n_in: int, n_st: int) -> SOPExpression:
     sop = SOPExpression()
     
-    # PyEDA returns Or(And(...), And(...))
-    # If there's only one term, it might just be an And or a Literal
-    terms = pyeda_expr.xs if isinstance(pyeda_expr, Or) else [pyeda_expr]
+    if pyeda_expr.is_zero():
+        return sop # Returns an empty SOP (0 terms = false)
+    if pyeda_expr.is_one():
+        # A term with all ABSENT variables evaluates to True naturally in Redstone
+        sop.add_term(ProductTerm([LiteralState.ABSENT] * n_in, [LiteralState.ABSENT] * n_st))
+        return sop
+    
+    # We now correctly check against OrOp and AndOp classes
+    terms = pyeda_expr.xs if isinstance(pyeda_expr, OrOp) else [pyeda_expr]
     
     for term in terms:
         in_lits = [LiteralState.ABSENT] * n_in
         st_lits = [LiteralState.ABSENT] * n_st
         
-        # Extract literals from the And term
-        literals = term.xs if isinstance(term, And) else [term]
+        # Extract literals from the AndOp term
+        literals = term.xs if isinstance(term, AndOp) else [term]
+        
         for lit in literals:
-            name = lit.name if not hasattr(lit, 'node') else lit.node.name
-            # Check if it's negated
-            is_neg = isinstance(lit, ExprComplement)
+            # The ultimate safe extraction: cast to string
+            # In PyEDA, variables look like 'i0' and complements look like '~i0'
+            lit_str = str(lit)
+            is_neg = lit_str.startswith('~')
+            clean_name = lit_str.replace('~', '')
             
-            idx = int(name[1:])
+            idx = int(clean_name[1:])
             state = LiteralState.NEGATED if is_neg else LiteralState.POSITIVE
             
-            if name.startswith('i'):
+            if clean_name.startswith('i'):
                 in_lits[idx] = state
             else:
                 st_lits[idx] = state
