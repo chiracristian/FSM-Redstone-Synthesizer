@@ -41,6 +41,7 @@ class DownwardsOrWire(BlockGrid):
 
                 # Place the output repeater
                 self.blocks[2][torch_y][3] = Repeater(Directions.NORTH)
+                self.delay += 1
                 break
 
             # Place the block one level down
@@ -66,6 +67,7 @@ class DownwardsOrWire(BlockGrid):
                 self.blocks[0][torch_y - 2][1] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_EAST)
                 self.blocks[0][torch_y - 3][0] = Wire(WIRE_UP_SOUTH | WIRE_SIDE_EAST)
                 self.blocks[1][torch_y - 3][0] = Repeater(Directions.WEST)
+                self.delay += 1
 
             # Otherwise just put wires
             else:

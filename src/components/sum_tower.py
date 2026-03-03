@@ -54,3 +54,10 @@ class SumTower(BlockGrid):
         downwards_wire = DownwardsOrWire(gate_count)
         torches_x = product_term_gates[0].out_torch_x
         self.paste(downwards_wire, torches_x - 2, 1, EFFECTIVE_UPWARDS_WIRE_DEPTH + PRODUCT_TERM_DEPTH)
+
+        # Calculate the total delay due to
+        # - repeaters before vertical wires (1)
+        # - the vertical wires
+        # - the torches/repeaters of each product term (2)
+        # - the output ORing wire
+        self.delay = 1 + state_var_wire.delay + 2 + downwards_wire.delay

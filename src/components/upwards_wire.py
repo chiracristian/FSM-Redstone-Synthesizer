@@ -37,6 +37,9 @@ class UpwardsWire(BlockGrid):
         self.blocks[0][y + 3][z + 2 * direction] = Block(BASE_COMBINATIONAL_BOTTOM)
         self.blocks[0][y + 3][z + direction] = Torch(TorchType.WALL, torch_facing, False)
 
+        # Add a delay for the two torches
+        self.delay += 2
+
     def __init__(self, height: int, facing: Directions, transparent_block: Block):
         size_x = UPWARDS_WIRE_WIDTH
         size_y = height + 1

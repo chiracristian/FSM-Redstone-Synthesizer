@@ -86,3 +86,6 @@ class ProductTermGate(BlockGrid):
         # Turn off the torch if the output rail is energized
         if (self.blocks[self.out_torch_x][2][3].is_energized()):
             self.blocks[self.out_torch_x][1][4].lit = False
+
+        # The delay is 2 (1 for input pins, 1 for the output torch)
+        self.delay = 2

@@ -23,6 +23,9 @@ class BlockGrid:
                          for _ in range(size_y)]
                          for _ in range(size_x)]
         
+        # Store the total delay of torches and repeaters
+        self.delay = 0
+        
     def is_out_of_bounds(self, x: int, y: int, z: int) -> bool:
         return not (0 <= x < self.size[0] and 0 <= y < self.size[1] and 0 <= z < self.size[2])
         
