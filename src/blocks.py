@@ -22,15 +22,13 @@ BASE_PLATE = "minecraft:quartz_block"
 BASE_INTERCONNECTION = "minecraft:polished_andesite"
 
 BASE_INPUT_VAR = "minecraft:prismarine_bricks"
-BASE_STATE_VARIABLE = "minecraft:gold_block"
+BASE_STATE_VAR = "minecraft:gold_block"
 BASE_COMBINATIONAL_BOTTOM = "minecraft:smooth_stone"
 BASE_PRODUCT_TERM = "minecraft:polished_diorite"
 BASE_DOWNWARDS_OR = "minecraft:polished_andesite"
 
-BASE_SEQUENTIAL = "minecraft:lime_concrete"
-BASE_SEQUENTIAL_D_PIN = "minecraft:lime_concrete"
-BASE_SEQUENTIAL_CLK_PIN = "minecraft:magenta_concrete"
-BASE_SEQUENTIAL_Q_PIN = "minecraft:orange_concrete"
+BASE_SEQUENTIAL = "minecraft:iron_block"
+BASE_CLK_IN_PIN = "minecraft:bone_block"
 
 # Customizable transparent blocks
 BASE_UPWARDS_WIRE = "minecraft:white_stained_glass"
