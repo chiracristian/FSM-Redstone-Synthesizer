@@ -7,6 +7,8 @@ from components.product_term import *
 from components.upwards_wire import *
 from components.downwards_wire import *
 
+TOWERS_SPACING = 1
+
 class SumTower(BlockGrid):
     def __init__(self, expression: SOPExpression):
         product_term_gates: list[ProductTermGate] = []
@@ -39,7 +41,7 @@ class SumTower(BlockGrid):
         x = 0
 
         for _ in range(0, state_vars_count):
-            self.blocks[x][0][1] = Block(BASE_STATE_VARIABLE)
+            self.blocks[x][0][1] = Block(BASE_STATE_VAR)
             self.blocks[x][1][1] = Repeater(Directions.NORTH)
             self.paste(state_var_wire, x, 0, 0)
             x += 2
@@ -58,6 +60,5 @@ class SumTower(BlockGrid):
         # Calculate the total delay due to
         # - repeaters before vertical wires (1)
         # - the vertical wires
-        # - the torches/repeaters of each product term (2)
         # - the output ORing wire
-        self.delay = 1 + state_var_wire.delay + 2 + downwards_wire.delay
+        self.delay = 1 + state_var_wire.delay + product_term_gates[0].delay + downwards_wire.delay
