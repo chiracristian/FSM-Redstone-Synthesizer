@@ -55,7 +55,7 @@ class InputBus(BlockGrid):
         bus_power = MAX_WIRE_POWER
         next_junction_idx = towers_count
 
-        for x in range(0, size_x):
+        for x in range(0, junctions_x[0] + 1):
             # Decrease the power
             bus_power -= 1
 

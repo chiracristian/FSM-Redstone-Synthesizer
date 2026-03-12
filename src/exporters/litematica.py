@@ -1,11 +1,11 @@
 #!/bin/python3
 
 from litemapy import Region, BlockState
-import block_grid
+from block_grid import BlockGrid
 
 MC_DATA_VERSION: int = 4189 # Minecraft 1.21.4
 
-def create_file(grid: block_grid, schematic_name: str, output_file_path: str):
+def create_file(grid: BlockGrid, schematic_name: str, output_file_path: str):
     size_x, size_y, size_z = grid.size
 
     region = Region(0, 0, 0, size_x, size_y, size_z)

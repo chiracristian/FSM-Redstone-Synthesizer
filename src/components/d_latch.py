@@ -22,4 +22,4 @@ class DLatch(BlockGrid):
         # Place the CLK pin
         self.blocks[0][1][2] = Torch(TorchType.WALL, Directions.NORTH)
         self.blocks[0][1][3] = Block(BASE_CLK_IN_PIN)
-        self.blocks[0][2][3] = Wire(WIRE_SIDE_EAST | WIRE_UP_WEST)
+        self.blocks[0][2][3] = Wire()

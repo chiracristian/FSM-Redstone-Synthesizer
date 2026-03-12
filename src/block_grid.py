@@ -3,7 +3,7 @@
 from blocks import *
 
 # X+ goes EAST
-# X- goes SOUTH
+# X- goes WEST
 # Y+ goes UP
 # Y- goes DOWN
 # Z+ goes SOUTH
@@ -72,7 +72,7 @@ class BlockGrid:
         states = block.get_block_states()
 
         for side, (dx, dy, dz) in directions.items():
-            conn_type = states.get(side.value)
+            conn_type = states.get(side.value) # pyright: ignore[reportArgumentType]
 
             nx, ny, nz = 0, 0, 0
             check_down = False
@@ -90,7 +90,7 @@ class BlockGrid:
 
             # Propagate through repeater, if facing correspondingly
             if isinstance(self.blocks[nx][ny][nz], Repeater):
-                if self.blocks[nx][ny][nz].facing == side:
+                if self.blocks[nx][ny][nz].facing == side: # pyright: ignore[reportAttributeAccessIssue]
                     self.propagate_power_from_repeater(nx, ny, nz)
             
             # Redstone automatically connects down if there is a wire below 
@@ -179,7 +179,8 @@ class BlockGrid:
 
                     # Bounds check
                     if not (0 <= gx < self.size[0] and 0 <= gy < self.size[1] and 0 <= gz < self.size[2]):
-                        raise BlockGridException(f"Block at ({gx},{gy},{gz}) is out of grid bounds.")
+                        raise BlockGridException(f"Block at ({gx},{gy},{gz}) is out of grid bounds. \
+                                                 Size is ({self.size[0]},{self.size[1]},{self.size[2]})")
                     
                     # Collision check
                     if (not allow_overwriting) and self.blocks[gx][gy][gz].name != "minecraft:air":
