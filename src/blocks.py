@@ -26,6 +26,7 @@ BASE_STATE_VAR = "minecraft:gold_block"
 BASE_COMBINATIONAL_BOTTOM = "minecraft:smooth_stone"
 BASE_PRODUCT_TERM = "minecraft:polished_diorite"
 BASE_DOWNWARDS_OR = "minecraft:polished_andesite"
+BASE_STATE_VAR_FEEDBACK = "minecraft:emerald_block"
 
 BASE_SEQUENTIAL = "minecraft:iron_block"
 BASE_CLK_IN_PIN = "minecraft:bone_block"
@@ -121,7 +122,7 @@ class Wire(Block):
         return self.power > 0
 
     def get_block_states(self) -> dict[str, str]:
-        result: dict = {}
+        result: dict[str, str] = {}
 
         result["power"] = str(self.power)
 

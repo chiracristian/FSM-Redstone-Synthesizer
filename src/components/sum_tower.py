@@ -8,6 +8,7 @@ from components.upwards_wire import *
 from components.downwards_wire import *
 
 TOWERS_SPACING = 1
+SUM_TOWER_DEPTH = EFFECTIVE_UPWARDS_WIRE_DEPTH + PRODUCT_TERM_DEPTH + DOWNWARDS_OR_WIRE_DEPTH
 
 class SumTower(BlockGrid):
     def __init__(self, expression: SOPExpression):
@@ -23,7 +24,7 @@ class SumTower(BlockGrid):
         # 4 is the minimal width, in case we have only one state variable and input
         size_x = max(4, gate_width)
         size_y = PRODUCT_TERM_HEIGHT * gate_count + 3
-        size_z = EFFECTIVE_UPWARDS_WIRE_DEPTH + PRODUCT_TERM_DEPTH + DOWNWARDS_OR_WIRE_DEPTH
+        size_z = SUM_TOWER_DEPTH
 
         super().__init__(size_x, size_y, size_z)
 
