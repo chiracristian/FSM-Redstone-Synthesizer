@@ -15,7 +15,6 @@ TORCH_FLOOR = "minecraft:redstone_torch"
 TORCH_WALL = "minecraft:redstone_wall_torch"
 TARGET = "minecraft:target"
 COPPER_BULB = "minecraft:waxed_copper_bulb"
-DROPPER = "minecraft:dropper"
 
 # Customizable solid blocks
 BASE_PLATE = "minecraft:quartz_block"
@@ -181,19 +180,5 @@ class Comparator(Block):
         result: dict = {}
 
         result["facing"] = self.facing.value
-
-        return result
-    
-class Dropper(Block):
-    def __init__(self, facing: Directions, triggered: bool = False):
-        super().__init__(DROPPER)
-        self.facing: Directions = facing
-        self.triggered: bool = triggered
-
-    def get_block_states(self) -> dict[str, str]:
-        result: dict = {}
-
-        result["facing"] = self.facing.value
-        result["triggered"] = bool_to_string(self.triggered)
 
         return result

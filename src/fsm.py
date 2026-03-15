@@ -4,7 +4,6 @@ from logic.transition_table import TransitionTable
 from logic.logic_minimzer import synthesize_logic
 from logic.sop_expression import SOPExpression, SOPOutput, SOPOutputType
 from components.sum_tower import SumTower, TOWERS_SPACING
-from components.d_latch import *
 from components.d_flip_flop import *
 from components.input_bus import *
 from components.feedback_wire import *
@@ -39,28 +38,19 @@ class FSM(BlockGrid):
         # Construct the input buses
         input_buses: list[InputBus] = []
         input_buses_x: list[int] = []
-        current_pin_len = -1
-        extend_len = -1
-        max_extend_len = 0
+        current_pin_len = -2
+        extend_to_flip_flop_len = -D_FLIP_FLOP_WIDTH - 1
+        
         for pin_idx in range(0, pins_per_tower):
-            base_block = None
-            extend_len_offset = 0
-            if is_external_var_in(pin_idx):
-                base_block = Block(BASE_INPUT_VAR)
-                current_pin_len += 2
-            else:
-                base_block = Block(BASE_STATE_VAR)
-                current_pin_len += 3
-                extend_len_offset = -D_FLIP_FLOP_WIDTH + 1
+            base_block = (Block(BASE_INPUT_VAR) if is_external_var_in(pin_idx) else Block(BASE_STATE_VAR))
 
-            extend_len += 3
-            result_extend_len = extend_len + extend_len_offset
-            max_extend_len = max(max_extend_len, result_extend_len)
+            current_pin_len += 3
+            extend_to_flip_flop_len += 3
 
             input_bus = InputBus(base_block, towers_count, tower_width, 
-                                  pin_idx, current_pin_len, result_extend_len)
+                                  pin_idx, current_pin_len, extend_to_flip_flop_len)
             input_buses.append(input_bus)
-            input_buses_x.append(result_extend_len)
+            input_buses_x.append(extend_to_flip_flop_len)
 
         input_buses_span: tuple[int, int, int] = (0, 0, 0)
         max_bus_width = 0
@@ -71,7 +61,7 @@ class FSM(BlockGrid):
 
         output_pins_extent = (transition_table.num_state_vars - 1) * 2 + 1
 
-        size_x = max(towers_x_span + 1, input_buses_span[0] + max_extend_len + D_FLIP_FLOP_WIDTH + 1)
+        size_x = max(towers_x_span + 1, input_buses_span[0] + input_buses_x[-1] + D_FLIP_FLOP_WIDTH + 1)
         size_y = max(towers_y_span, input_buses_span[1])
         size_z = towers_z_span + input_buses_span[2] + output_pins_extent
         super().__init__(size_x, size_y, size_z)
@@ -103,14 +93,13 @@ class FSM(BlockGrid):
             input_bus_delay = max(input_bus_delay, bus.delay)
 
             y = INPUT_BUS_HEIGHT - 1
+
+            # Put a D flip flop in front of the input line
+            self.paste(DFlipFlop(), x - D_FLIP_FLOP_WIDTH, y, z)
+            
             if is_external_var_in(i):
-                # Put a D latch in front of the input line
-                self.paste(DLatch(), x - D_LATCH_WIDTH, y, z)
                 last_in_i = i
             else:
-                # Put a D flip flop in front of the input line
-                self.paste(DFlipFlop(), x - D_FLIP_FLOP_WIDTH, y, z)
-                
                 # Put the feedback line
                 tower_idx = i - (last_in_i + 1)
                 feedback_wire = FeedbackWire(towers_x_span, tower_width, tower_idx, bus_x, bus.size[2])
