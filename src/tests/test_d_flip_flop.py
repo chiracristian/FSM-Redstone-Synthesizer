@@ -9,5 +9,5 @@ import components.d_flip_flop
 d_flip_flop = components.d_flip_flop.DFlipFlop()
 
 # Export to litematic
-exporters.litematica.create_file(d_flip_flop, "d_flip_flop", "../output/d_flip_flop.litematic")
+exporters.litematica.litematica_export(d_flip_flop, "d_flip_flop", "../output/d_flip_flop.litematic")
 print("Saved succesfully")

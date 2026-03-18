@@ -26,5 +26,5 @@ grid.paste(region1, 1, 1, 1)
 grid.paste(region2, 1, 4, 1)
 
 # Export to litematic
-exporters.litematica.create_file(grid, "stone_cube", "../output/stone_cube.litematic")
+exporters.litematica.litematica_export(grid, "stone_cube", "../output/stone_cube.litematic")
 print("Saved succesfully")

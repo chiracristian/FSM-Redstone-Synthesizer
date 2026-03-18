@@ -21,5 +21,5 @@ for prod in products:
 
 test_sum_tower = SumTower(sum_expr)
 
-exporters.litematica.create_file(test_sum_tower, "test_sum_tower", "../output/test_sum_tower.litematic")
+exporters.litematica.litematica_export(test_sum_tower, "test_sum_tower", "../output/test_sum_tower.litematic")
 print("Saved succesfully")

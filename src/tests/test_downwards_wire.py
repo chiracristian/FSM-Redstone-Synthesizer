@@ -9,5 +9,5 @@ import components.downwards_wire
 downwards_wire = components.downwards_wire.DownwardsOrWire(16)
 
 # Export to litematic
-exporters.litematica.create_file(downwards_wire, "downwards_wire", "../output/downwards_wire.litematic")
+exporters.litematica.litematica_export(downwards_wire, "downwards_wire", "../output/downwards_wire.litematic")
 print("Saved succesfully")
