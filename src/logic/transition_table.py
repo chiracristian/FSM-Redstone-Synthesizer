@@ -1,10 +1,21 @@
+from dataclasses import dataclass
 import json
 
+@dataclass
+class TransitionTableInfo:
+    name: str
+    description: str
+
+@dataclass
+class TransitionTableConfig:
+    num_inputs: int
+    num_state_vars: int
+    num_outputs: int
+
 class TransitionTable:
-    def __init__(self, num_inputs: int, num_states: int, num_outputs: int):
-        self.num_inputs = num_inputs
-        self.num_state_vars = num_states
-        self.num_outputs = num_outputs
+    def __init__(self, info: TransitionTableInfo, config: TransitionTableConfig):
+        self.info = info
+        self.config = config
         
         # The table is a list of dictionaries representing each row
         self.rows: list[dict[str, list[int]]] = []
@@ -14,34 +25,50 @@ class TransitionTable:
         with open(file_path, 'r') as f:
             data = json.load(f)
         
-        # Metadata configuration
-        config = data.get("config", {})
-        n_in = config.get("num_inputs", 1)
-        n_st = config.get("num_state_vars", 1)
-        n_out = config.get("num_outputs", 1)
+        # Parse info
+        info_data = data.get("info", {})
+        info = TransitionTableInfo(
+            name=info_data.get("name", "unnamed_machine"),
+            description=info_data.get("description", "")
+        )
+
+        # Parse configuration
+        conf_data = data.get("config", {})
+        config = TransitionTableConfig(
+            num_inputs=conf_data.get("num_inputs", 1),
+            num_state_vars=conf_data.get("num_state_vars", 1),
+            num_outputs=conf_data.get("num_outputs", 1)
+        )
         
-        table = cls(n_in, n_st, n_out)
+        table = cls(info, config)
         
-        # Load rows
-        # Expected JSON format: list of objects with "input", "state_t", "state_next", "output"
+        # Load and validate rows of the table
         for entry in data.get("table", []):
             row = {
-                "input": entry["input"],           # e.g., [0, 1]
-                "state_t": entry["state_t"],       # e.g., [0, 0, 1]
-                "state_next": entry["state_next"], # e.g., [0, 1, 0]
-                "output": entry["output"]          # e.g., [1, 0]
+                "input": entry["input"],
+                "state_t": entry["state_t"],
+                "state_next": entry["state_next"],
+                "output": entry["output"]
             }
             
-            # Check if row dimension matches
-            if len(row["input"]) != n_in or len(row["state_t"]) != n_st:
-                raise ValueError(f"Row dimension mismatch in {file_path}")
-                
+            # Validation: Ensure the JSON data matches the config
+            cls._validate_row(row, config, file_path)
             table.rows.append(row)
             
         return table
 
+    @staticmethod
+    def _validate_row(row, config, file_path):
+        # Internal helper to ensure JSON data matches the defined bit-widths.
+        if len(row["input"]) != config.num_inputs:
+            raise ValueError(f"Input dimension mismatch in {file_path}: expected {config.num_inputs}")
+        if len(row["state_t"]) != config.num_state_vars:
+            raise ValueError(f"State dimension mismatch in {file_path}: expected {config.num_state_vars}")
+        if len(row["output"]) != config.num_outputs:
+            raise ValueError(f"Output dimension mismatch in {file_path}: expected {config.num_outputs}")
+
     def get_next_state(self, current_state: list[int], inputs: list[int]) -> list[int]:
-        """Lookup delta(s, i)"""
+        # Lookup delta(s, i)
         for row in self.rows:
             if row["state_t"] == current_state and row["input"] == inputs:
                 return row["state_next"]

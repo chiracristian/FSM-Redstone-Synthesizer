@@ -16,9 +16,10 @@ class FSM(BlockGrid):
         print("Synthesized logic: ")
         print(generated_sops)
 
+        num_inputs = transition_table.config.num_inputs
+        num_state_vars = transition_table.config.num_state_vars
+
         # Determine the X size of the FSM
-        num_inputs = transition_table.num_inputs
-        num_state_vars = transition_table.num_state_vars
         num_tower_pins = num_inputs + num_state_vars
         num_towers = len(generated_sops.keys())
 
