@@ -17,7 +17,7 @@ class TransitionTable:
         self.info = info
         self.config = config
         
-        # The table is a list of dictionaries representing each row
+        # The table remains a list of dictionaries representing each row with bit-arrays
         self.rows: list[dict[str, list[int]]] = []
 
     @classmethod
@@ -39,23 +39,40 @@ class TransitionTable:
             num_state_vars=conf_data.get("num_state_vars", 1),
             num_outputs=conf_data.get("num_outputs", 1)
         )
+
+        # Create lookup dictionaries from the name mapping lists
+        input_map = cls._parse_name_map(data.get("inputs_names", []))
+        state_map = cls._parse_name_map(data.get("state_names", []))
+        output_map = cls._parse_name_map(data.get("output_names", []))
         
         table = cls(info, config)
         
-        # Load and validate rows of the table
+        # Load and resolve names into bit-arrays
         for entry in data.get("table", []):
-            row = {
-                "input": entry["input"],
-                "state_t": entry["state_t"],
-                "state_next": entry["state_next"],
-                "output": entry["output"]
-            }
+            try:
+                row = {
+                    "input": input_map[entry["input"]],
+                    "state_t": state_map[entry["state_t"]],
+                    "state_next": state_map[entry["state_next"]],
+                    "output": output_map[entry["output"]]
+                }
+            except KeyError as e:
+                raise KeyError(f"Label {e} not found in the mapping definitions of {file_path}")
             
-            # Validation: Ensure the JSON data matches the config
+            # Validation: Ensure the resolved bit-arrays match the config
             cls._validate_row(row, config, file_path)
             table.rows.append(row)
             
         return table
+
+    @staticmethod
+    def _parse_name_map(mapping_list: list[dict]) -> dict[str, list[int]]:
+        # Flattens the JSON name mapping list into a single lookup dictionary.
+        lookup = {}
+        for entry in mapping_list:
+            for name, bits in entry.items():
+                lookup[name] = bits
+        return lookup
 
     @staticmethod
     def _validate_row(row, config, file_path):

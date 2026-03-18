@@ -1,0 +1,34 @@
+{
+    "info": {
+        "name": "one_bit_toggler",
+        "description": "Cycles between two states when the input is high (1). Holds current state when input is low (0)."
+    },
+    "config": {
+        "num_inputs": 1,
+        "num_state_vars": 1,
+        "num_outputs": 1
+    },
+
+    "inputs_names": [
+        {"hold": [0]},
+        {"cycle": [1]}
+    ],
+
+    "state_names": [
+        {"off": [0]},
+        {"on": [1]}
+    ],
+
+    "output_names": [
+        {"no_signal": [0]},
+        {"active_signal": [1]}
+    ],
+
+    "table": [
+        { "input": "hold",  "state_t": "off", "state_next": "off", "output": "no_signal" },
+        { "input": "cycle", "state_t": "off", "state_next": "on",  "output": "no_signal" },
+
+        { "input": "hold",  "state_t": "on",  "state_next": "on",  "output": "active_signal" },
+        { "input": "cycle", "state_t": "on",  "state_next": "off", "output": "active_signal" }
+    ]
+}
