@@ -3,7 +3,7 @@
 from blocks import *
 from block_grid import BlockGrid
 import exporters.litematica
-from fsm import *
+from components.fsm import *
 from logic.transition_table import *
 from logic.logic_minimzer import *
 
