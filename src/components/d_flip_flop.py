@@ -11,10 +11,12 @@ class DFlipFlop(BlockGrid):
     def __init__(self):
         super().__init__(D_FLIP_FLOP_WIDTH, D_FLIP_FLOP_HEIGHT, D_FLIP_FLOP_DEPTH)
 
+        base_block = Block(BASE_SEQUENTIAL)
+
         # Place base plate
         for x in range (0, 2):
             for z in range(0, 2):
-                self.blocks[x][0][z] = Block(BASE_SEQUENTIAL)
+                self.blocks[x][0][z] = base_block
         
         # Place input repeaters
         self.blocks[0][1][0] = Repeater(Directions.WEST)
@@ -25,7 +27,6 @@ class DFlipFlop(BlockGrid):
         self.blocks[1][1][1] = Repeater(Directions.SOUTH, True)
 
         # Place clock pin and torch
-        self.blocks[0][1][2] = Block(BASE_CLK_IN_PIN)
-        self.blocks[0][2][2] = Wire()
+        self.blocks[0][1][2] = base_block
+        self.blocks[0][2][2] = Wire(WIRE_UP_SOUTH | WIRE_SIDE_NORTH)
         self.blocks[1][1][2] = Torch(TorchType.WALL, Directions.EAST)
-        

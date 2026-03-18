@@ -2,21 +2,18 @@
 
 from blocks import *
 from block_grid import BlockGrid
-from components.sum_tower import TOWERS_SPACING, SUM_TOWER_DEPTH
-from components.d_flip_flop import D_FLIP_FLOP_WIDTH
 
 FEEDBACK_WIRE_HEIGHT = 4
 
-# The feedback bus is meant to be pasted right at the input
+# This is meant to be pasted right at the input
 class FeedbackWire(BlockGrid):
-    def __init__(self, towers_x_span: int, tower_width: int,
-                 tower_idx: int, input_bus_len: int, input_bus_z: int):
+    def __init__(self, front_wire_length: int, side_wire_length: int, back_wire_length: int,
+                    output_pin_length: int):
         base_block = Block(BASE_STATE_VAR_FEEDBACK)
         
-        extend_after_towers = 2 * (tower_idx + 1)
-        size_x = towers_x_span + input_bus_len + D_FLIP_FLOP_WIDTH + 1 + extend_after_towers
+        size_x = front_wire_length + 2
         size_y = FEEDBACK_WIRE_HEIGHT
-        size_z = input_bus_z + 1 + SUM_TOWER_DEPTH + 2 * tower_idx
+        size_z = side_wire_length + 2
         super().__init__(size_x, size_y, size_z)
 
         # Place the stair into the D flip flop
@@ -44,13 +41,9 @@ class FeedbackWire(BlockGrid):
         self.blocks[size_x - 1][2][size_z - 1] = base_block
         self.blocks[size_x - 1][3][size_z - 1] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_WEST)
 
-        # Place the back line
-        back_line_length = extend_after_towers - 1
-        back_line_length += tower_idx * (tower_width + TOWERS_SPACING)
-        back_line_length += tower_width // 2 - 1
-
+        # Place the back wire
         x = size_x - 2
-        for _ in range(0, back_line_length):
+        for _ in range(0, back_wire_length):
             self.blocks[x][2][size_z - 1] = base_block
             self.blocks[x][3][size_z - 1] = Wire(WIRE_SIDE_EAST | WIRE_SIDE_WEST)
             x -= 1
@@ -59,8 +52,6 @@ class FeedbackWire(BlockGrid):
         self.blocks[x][1][size_z - 1] = base_block
         self.blocks[x][2][size_z - 1] = Wire(WIRE_UP_EAST | WIRE_SIDE_WEST)
         x -= 1
-
-        output_pin_length = 2 * tower_idx
 
         self.blocks[x][0][size_z - 1] = base_block
         if output_pin_length == 0:
@@ -93,7 +84,7 @@ class FeedbackWire(BlockGrid):
 
         # Place repeaters along the back line
         start_x = x + 2
-        for x in range(start_x, start_x + back_line_length):
+        for x in range(start_x, start_x + back_wire_length):
             if current_power == 0 or (x == size_x - 1 and current_power <= 1):
                 self.blocks[x][3][size_z - 1] = Repeater(Directions.WEST)
                 self.delay += 1

@@ -26,9 +26,7 @@ BASE_COMBINATIONAL_BOTTOM = "minecraft:smooth_stone"
 BASE_PRODUCT_TERM = "minecraft:polished_diorite"
 BASE_DOWNWARDS_OR = "minecraft:polished_andesite"
 BASE_STATE_VAR_FEEDBACK = "minecraft:emerald_block"
-
 BASE_SEQUENTIAL = "minecraft:iron_block"
-BASE_CLK_IN_PIN = "minecraft:bone_block"
 
 # Customizable transparent blocks
 BASE_UPWARDS_WIRE = "minecraft:white_stained_glass"
@@ -156,11 +154,12 @@ class Torch(Block):
         return result
 
 class Repeater(Block):
-    def __init__(self, facing: Directions, powered: bool = False, locked: bool = False):
+    def __init__(self, facing: Directions, powered: bool = False, locked: bool = False, delay: int = 1):
         super().__init__(REPEATER)
         self.facing: Directions = facing
         self.powered: bool = powered
         self.locked: bool = locked
+        self.delay: int = delay
 
     def get_block_states(self) -> dict[str, str]:
         result: dict = {}
@@ -168,17 +167,25 @@ class Repeater(Block):
         result["facing"] = self.facing.value
         result["powered"] = bool_to_string(self.powered)
         result["locked"] = bool_to_string(self.locked)
+        result["delay"] = str(self.delay)
 
         return result
 
+class ComparatorModes(Enum):
+    INVALID = None
+    COMPARE = "compare"
+    SUBTRACT = "subtract"
+
 class Comparator(Block):
-    def __init__(self, facing: Directions):
+    def __init__(self, facing: Directions, mode: ComparatorModes):
         super().__init__(COMPARATOR)
         self.facing: Directions = facing
+        self.mode: ComparatorModes = mode
 
     def get_block_states(self) -> dict[str, str]:
         result: dict = {}
 
         result["facing"] = self.facing.value
+        result["mode"] = self.mode.value
 
         return result

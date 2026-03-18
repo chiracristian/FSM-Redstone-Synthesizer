@@ -52,8 +52,12 @@ class SOPExpression:
     def add_term(self, term: ProductTerm):
         self.terms.append(term)
 
-    def __repr__(self):
+    def terms_count(self) -> int:
+        return len(self.terms)
+
+    def __repr__(self) -> str:
         if not self.terms:
             return "0 (Always False)"
+        
         # Joins terms with a + to represent the OR plane
         return " + ".join(repr(t) for t in self.terms)

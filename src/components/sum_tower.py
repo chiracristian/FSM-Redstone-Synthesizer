@@ -7,10 +7,13 @@ from components.product_term import *
 from components.upwards_wire import *
 from components.downwards_wire import *
 
-TOWERS_SPACING = 1
 SUM_TOWER_DEPTH = EFFECTIVE_UPWARDS_WIRE_DEPTH + PRODUCT_TERM_DEPTH + DOWNWARDS_OR_WIRE_DEPTH
 
 class SumTower(BlockGrid):
+    @staticmethod
+    def determine_height(gate_count: int) -> int:
+        return PRODUCT_TERM_HEIGHT * gate_count + 3
+
     def __init__(self, expression: SOPExpression):
         product_term_gates: list[ProductTermGate] = []
         for term in expression.terms:
@@ -21,9 +24,8 @@ class SumTower(BlockGrid):
         input_vars_count = product_term_gates[0].inputs_count
         state_vars_count = product_term_gates[0].state_vars_count
 
-        # 4 is the minimal width, in case we have only one state variable and input
-        size_x = max(4, gate_width)
-        size_y = PRODUCT_TERM_HEIGHT * gate_count + 3
+        size_x = gate_width
+        size_y = SumTower.determine_height(gate_count)
         size_z = SUM_TOWER_DEPTH
 
         super().__init__(size_x, size_y, size_z)
@@ -59,7 +61,7 @@ class SumTower(BlockGrid):
         self.paste(downwards_wire, torches_x - 2, 1, EFFECTIVE_UPWARDS_WIRE_DEPTH + PRODUCT_TERM_DEPTH)
 
         # Calculate the total delay due to
-        # - repeaters before vertical wires (1)
-        # - the vertical wires
-        # - the output ORing wire
+        # repeaters before vertical wires (1)
+        # the vertical wires
+        # the output ORing wire
         self.delay = 1 + state_var_wire.delay + product_term_gates[0].delay + downwards_wire.delay

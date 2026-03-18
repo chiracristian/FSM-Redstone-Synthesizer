@@ -2,15 +2,17 @@
 
 from blocks import *
 from block_grid import BlockGrid
-from components.sum_tower import SumTower, TOWERS_SPACING
 
 INPUT_BUS_HEIGHT = 4
 
 class InputBus(BlockGrid):
-    def __init__(self, base_block: Block, towers_count: int, tower_width: int,
-                 pin_idx: int, pin_connection_length: int, additional_extend_length: int):
-        size_x = towers_count * tower_width + \
-                (towers_count - 1) * TOWERS_SPACING + additional_extend_length
+    def __init__(self, base_block: Block, num_variables: int, pin_idx: int, 
+                 pin_connection_length: int, additional_extend_length: int):
+        tower_width = 2 * num_variables - 1 
+        between_towers_width = num_variables - 1
+        towers_width = num_variables * tower_width + between_towers_width
+
+        size_x = towers_width + additional_extend_length
         size_y = INPUT_BUS_HEIGHT
         size_z = pin_connection_length + 1
         
@@ -20,7 +22,7 @@ class InputBus(BlockGrid):
 
         # Place connection pins
         current_x = size_x - 1 - 2 * pin_idx
-        for tower_idx in range(0, towers_count):
+        for tower_idx in range(0, num_variables):
             # Place the junction
             junctions_x.append(current_x)
             self.blocks[current_x][1][0] = base_block
@@ -30,18 +32,20 @@ class InputBus(BlockGrid):
                 self.blocks[current_x][2][0] = Wire(WIRE_SIDE_SOUTH | WIRE_UP_EAST | WIRE_UP_WEST)
 
             # Place the pin
-            self.blocks[current_x][0][1] = base_block
-            self.blocks[current_x][1][1] = Wire(WIRE_UP_NORTH | WIRE_SIDE_SOUTH)
-            for z in range(2, size_z):
-                self.blocks[current_x][0][z] = base_block
-                self.blocks[current_x][1][z] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
-            current_x -= tower_width + TOWERS_SPACING
+            if pin_connection_length != 0:
+                self.blocks[current_x][0][1] = base_block
+                self.blocks[current_x][1][1] = Wire(WIRE_UP_NORTH | WIRE_SIDE_SOUTH)
+                for z in range(2, size_z):
+                    self.blocks[current_x][0][z] = base_block
+                    self.blocks[current_x][1][z] = Wire(WIRE_SIDE_NORTH | WIRE_SIDE_SOUTH)
+                    
+            current_x -= tower_width + 1
 
         # Place the bus rail
         next_junction_idx = 1
         for x in range(junctions_x[0] - 1, -1, -1):
             # Skip placing at the junctions
-            if next_junction_idx < towers_count and x == junctions_x[next_junction_idx]:
+            if next_junction_idx < num_variables and x == junctions_x[next_junction_idx]:
                 next_junction_idx += 1
                 continue
 
@@ -53,7 +57,7 @@ class InputBus(BlockGrid):
         max_delay = 0
         bus_delay = 0
         bus_power = MAX_WIRE_POWER
-        next_junction_idx = towers_count
+        next_junction_idx = num_variables
 
         for x in range(0, junctions_x[0] + 1):
             # Decrease the power

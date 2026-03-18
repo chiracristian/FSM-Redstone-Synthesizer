@@ -2,68 +2,50 @@ from blocks import *
 from block_grid import BlockGrid
 from logic.transition_table import TransitionTable
 from logic.logic_minimzer import synthesize_logic
-from logic.sop_expression import SOPExpression, SOPOutput, SOPOutputType
-from components.sum_tower import SumTower, TOWERS_SPACING
+from logic.sop_expression import SOPExpression, SOPOutput
+from components.sum_tower import SumTower, SUM_TOWER_DEPTH
 from components.d_flip_flop import *
 from components.input_bus import *
 from components.feedback_wire import *
+from components.clock_bus import *
 
 class FSM(BlockGrid):
     def __init__(self, transition_table: TransitionTable):
+        # Generate the sums for next state variables and external variables output
         generated_sops: dict[SOPOutput, SOPExpression] = synthesize_logic(transition_table)
+        print("Synthesized logic: ")
         print(generated_sops)
 
-        # Construct the towers
-        sum_towers: list[SumTower] = []
-        towers_x_span = 0
-        towers_y_span = 0
-        towers_z_span = 0
-        pins_per_tower = transition_table.num_inputs + transition_table.num_state_vars
+        # Determine the X size of the FSM
+        num_inputs = transition_table.num_inputs
+        num_state_vars = transition_table.num_state_vars
+        num_tower_pins = num_inputs + num_state_vars
+        num_towers = len(generated_sops.keys())
 
-        for sop in generated_sops.values():
-            current_tower = SumTower(sop)
-            sum_towers.append(current_tower)
-            towers_x_span += current_tower.size[0]
-            towers_y_span = max(towers_y_span, current_tower.size[1])
-            towers_z_span = max(towers_z_span, current_tower.size[2])
+        feedback_wires_width = 2 * num_state_vars
 
-        tower_width = sum_towers[0].size[0]
-        towers_count = len(sum_towers)
-        if towers_count > 1:
-            towers_x_span += TOWERS_SPACING * (towers_count - 1)
+        tower_width = 2 * num_tower_pins - 1
+        between_towers_width = num_towers - 1
+        towers_width = num_towers * tower_width + between_towers_width
 
-        def is_external_var_in(pin_idx: int) -> bool:
-            return pin_idx < transition_table.num_inputs
+        flip_flops_part_width = (D_FLIP_FLOP_WIDTH + 1) * num_towers
 
-        # Construct the input buses
-        input_buses: list[InputBus] = []
-        input_buses_x: list[int] = []
-        current_pin_len = -2
-        extend_to_flip_flop_len = -D_FLIP_FLOP_WIDTH - 1
-        
-        for pin_idx in range(0, pins_per_tower):
-            base_block = (Block(BASE_INPUT_VAR) if is_external_var_in(pin_idx) else Block(BASE_STATE_VAR))
+        size_x = feedback_wires_width + towers_width + flip_flops_part_width
 
-            current_pin_len += 3
-            extend_to_flip_flop_len += 3
+        # Determine the Y size of the FSM
+        max_tower_height = 0
+        for expr in generated_sops.values():
+            current_height = SumTower.determine_height(expr.terms_count())
+            max_tower_height = max(max_tower_height, current_height)
 
-            input_bus = InputBus(base_block, towers_count, tower_width, 
-                                  pin_idx, current_pin_len, extend_to_flip_flop_len)
-            input_buses.append(input_bus)
-            input_buses_x.append(extend_to_flip_flop_len)
+        size_y = max_tower_height + 1
 
-        input_buses_span: tuple[int, int, int] = (0, 0, 0)
-        max_bus_width = 0
-        for bus in input_buses:
-            if bus.size[0] >= max_bus_width:
-                max_bus_width = bus.size[0]
-                input_buses_span = bus.size
+        # Determine the Z size of the FSM
+        input_buses_z = 3 * num_towers - 1
+        feedback_lines_z = 2 * num_state_vars - 1
+        size_z = input_buses_z + SUM_TOWER_DEPTH + feedback_lines_z
 
-        output_pins_extent = (transition_table.num_state_vars - 1) * 2 + 1
-
-        size_x = max(towers_x_span + 1, input_buses_span[0] + input_buses_x[-1] + D_FLIP_FLOP_WIDTH + 1)
-        size_y = max(towers_y_span, input_buses_span[1])
-        size_z = towers_z_span + input_buses_span[2] + output_pins_extent
+        # Initialize the BlockGrid
         super().__init__(size_x, size_y, size_z)
 
         # Add a base plate
@@ -71,43 +53,100 @@ class FSM(BlockGrid):
             for z in range(0, size_z):
                 self.blocks[x][0][z] = Block(BASE_PLATE)
 
-        # Paste towers (left to right)
-        TOWERS_X_OFFSET = 2 * transition_table.num_state_vars
-        current_x = size_x - TOWERS_X_OFFSET
-        towers_z = input_buses_span[2]
-        towers_delay = 0
+        # Build the sum towers
+        sum_towers: list[SumTower] = []
+        max_tower_height = 0
+        sum_towers_delay = 0
+        for expr in generated_sops.values():
+            current_tower = SumTower(expr)
+            sum_towers.append(current_tower)
+
+            max_tower_height = max(max_tower_height, current_tower.size[1])
+            sum_towers_delay = max(sum_towers_delay, current_tower.delay)
+
+        # Place the sum towers
+        x = size_x - feedback_wires_width - tower_width
+        y = 1
+        z = input_buses_z
         for tower in sum_towers:
-            current_x -= tower_width
-            self.paste(tower, current_x, 1, towers_z)
-            current_x -= TOWERS_SPACING
-            towers_delay = max(towers_delay, tower.delay)
+            self.paste(tower, x, y, z)
+            x -= (tower_width + 1)
 
-        # Paste inputs, D latches or flip flops and feedback lines
-        last_in_i = 0
-        input_bus_delay = 0
-        feedback_wire_delay = 0
-        for i, (bus, bus_x) in enumerate(zip(input_buses, input_buses_x)):
-            x = size_x - towers_x_span - bus_x - TOWERS_X_OFFSET
-            z = towers_z - bus.size[2] + 1
-            self.paste(bus, x, 1, z)
-            input_bus_delay = max(input_bus_delay, bus.delay)
+        def input_pin_length(i: int) -> int:
+            return 3 * i + 1
+        
+        def input_extend_length(i: int) -> int:
+            return 3 * i
 
-            y = INPUT_BUS_HEIGHT - 1
-
-            # Put a D flip flop in front of the input line
-            self.paste(DFlipFlop(), x - D_FLIP_FLOP_WIDTH, y, z)
+        # Build the input buses
+        input_buses: list[InputBus] = []
+        input_buses_delay = 0
+        for i in range(num_tower_pins):
+            base_block = (Block(BASE_INPUT_VAR) if i < num_inputs else Block(BASE_STATE_VAR))
             
-            if is_external_var_in(i):
-                last_in_i = i
-            else:
-                # Put the feedback line
-                tower_idx = i - (last_in_i + 1)
-                feedback_wire = FeedbackWire(towers_x_span, tower_width, tower_idx, bus_x, bus.size[2])
-                feedback_wire_delay = max(feedback_wire_delay, feedback_wire.delay)
-                self.paste(feedback_wire, x - D_FLIP_FLOP_WIDTH - 1, y, z - 1, True)
+            input_bus = InputBus(base_block, num_tower_pins, i, input_pin_length(i), input_extend_length(i))
+            input_buses.append(input_bus)
 
-        print(f"Input bus delay: {input_bus_delay}")
-        print(f"Towers delay: {towers_delay}")
-        print(f"Output feedback delay: {feedback_wire_delay}")
-        total_delay = input_bus_delay + towers_delay + feedback_wire_delay
+            input_buses_delay = max(input_buses_delay, input_bus.delay)
+
+        # Create a d_flip_flop
+        d_flip_flop = DFlipFlop()
+
+        def input_paste_x(i: int) -> int:
+            return size_x - feedback_wires_width - towers_width - 3 * i
+        
+        def input_paste_z(i: int) -> int:
+            return input_buses_z - 1 - 3 * i
+
+        # Create feedback lines
+        feedback_lines: list[FeedbackWire] = []
+        feedback_lines_delay = 0
+        for i in range(num_state_vars):
+            shifted_i = i + num_inputs
+            extend_after_towers = 2 * i + 1
+            front_wire_length = D_FLIP_FLOP_WIDTH + input_extend_length(shifted_i) + towers_width + extend_after_towers
+            side_wire_length = input_pin_length(shifted_i) + SUM_TOWER_DEPTH + 2 * i
+
+            back_wire_length = extend_after_towers
+            back_wire_length += i * (tower_width + 1)
+            back_wire_length += tower_width // 2 - 1
+
+            feedback_line = FeedbackWire(front_wire_length, side_wire_length, back_wire_length, 2 * i)
+            feedback_lines.append(feedback_line)
+
+            feedback_lines_delay = max(feedback_lines_delay, feedback_line.delay)
+
+        # Paste the input lines
+        for i in range(num_tower_pins):
+            in_x = input_paste_x(i)
+            in_z = input_paste_z(i)
+
+            # Paste the input lines
+            self.paste(input_buses[i], in_x, 1, in_z)
+
+            # Paste the D flip-flops
+            self.paste(d_flip_flop, in_x - D_FLIP_FLOP_WIDTH, 3, in_z)
+
+        # Paste the feedback lines
+        for i in range(num_state_vars):
+            in_x = input_paste_x(i+num_inputs)
+            in_z = input_paste_z(i+num_inputs)
+            self.paste(feedback_lines[i], in_x - D_FLIP_FLOP_WIDTH - 1, 3, in_z - 1)
+
+        # Print delays
+        print(f"Input buses delay: {input_buses_delay}")
+        print(f"Combinational logic delay: {sum_towers_delay}")
+        print(f"State variables feedback delay: {feedback_lines_delay}")
+
+        total_delay = input_buses_delay + sum_towers_delay + feedback_lines_delay
         print(f"Total delay: {total_delay}")
+
+        # Build the clock bus
+        clock_bus = ClockBus(num_tower_pins, total_delay)
+
+        # Paste the clock bus
+        last_i = num_tower_pins - 1
+        x = input_paste_x(last_i) - D_FLIP_FLOP_WIDTH
+        y = 5
+        z = input_paste_z(last_i) + D_FLIP_FLOP_DEPTH
+        self.paste(clock_bus, x, y, z)
