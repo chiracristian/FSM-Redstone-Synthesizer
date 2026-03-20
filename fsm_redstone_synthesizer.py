@@ -46,7 +46,7 @@ def main():
     print(f"\n[*] Exporting to {args.output} ...")
     litematica_export(fsm_grid, table.info.name, args.output)
 
-    print("[*] Success!")
+    print("[+] Success!")
 
 if __name__ == "__main__":
     main()

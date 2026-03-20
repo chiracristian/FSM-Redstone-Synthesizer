@@ -1,0 +1,6 @@
+# Required Python version: 3.10.12+
+litemapy==0.11.0b0
+nbtlib==2.0.4
+numpy==2.2.6
+pyeda==0.29.0
+typing_extensions==4.15.0
