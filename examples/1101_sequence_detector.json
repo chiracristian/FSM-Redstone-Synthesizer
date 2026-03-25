@@ -9,7 +9,7 @@
         "num_outputs": 1
     },
 
-    "inputs_names": [
+    "input_names": [
         {"no_input": [0]},
         {"enabled_input": [1]}
     ],

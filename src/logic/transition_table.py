@@ -41,7 +41,7 @@ class TransitionTable:
         )
 
         # Create lookup dictionaries from the name mapping lists
-        input_map = cls._parse_name_map(data.get("inputs_names", []))
+        input_map = cls._parse_name_map(data.get("input_names", []))
         state_map = cls._parse_name_map(data.get("state_names", []))
         output_map = cls._parse_name_map(data.get("output_names", []))
         
