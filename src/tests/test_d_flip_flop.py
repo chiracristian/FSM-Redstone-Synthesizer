@@ -1,13 +1,11 @@
 #!/bin/python3
 
-import blocks
-from block_grid import BlockGrid
-import exporters.litematica
-import components.d_flip_flop
+from exporters.litematica import litematica_export
+from components.d_flip_flop import DFlipFlop
 
 # Create D flip flop
-d_flip_flop = components.d_flip_flop.DFlipFlop()
+d_flip_flop = DFlipFlop()
 
 # Export to litematic
-exporters.litematica.litematica_export(d_flip_flop, "d_flip_flop", "../output/d_flip_flop.litematic")
-print("Saved succesfully")
+litematica_export(d_flip_flop, "d_flip_flop", "../output/d_flip_flop.litematic")
+print("Saved d_flip_flop.litematic succesfully")

@@ -1,13 +1,12 @@
 #!/bin/python3
 
-from blocks import *
-from block_grid import BlockGrid
-import exporters.litematica
-import components.upwards_wire
+from blocks import Directions
+from exporters.litematica import litematica_export
+from components.upwards_wire import UpwardsWire
 
 # Create Upwards wire
-upwards_wire = components.upwards_wire.UpwardsWire(100, Directions.SOUTH)
+upwards_wire = UpwardsWire(100, Directions.SOUTH)
 
 # Export to litematic
-exporters.litematica.litematica_export(upwards_wire, "upwards_wire", "../output/upwards_wire.litematic")
-print("Saved succesfully")
+litematica_export(upwards_wire, "upwards_wire", "../output/upwards_wire.litematic")
+print("Saved upwards_wire.litematic succesfully")

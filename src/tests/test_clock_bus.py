@@ -1,10 +1,8 @@
-import blocks
-from block_grid import BlockGrid
-import exporters.litematica
+from exporters.litematica import litematica_export
 from components.clock_bus import ClockBus
 
 clock_bus = ClockBus(20, 19)
 
 # Export to litematic
-exporters.litematica.litematica_export(clock_bus, "clock_bus", "../output/clock_bus.litematic")
-print("Saved succesfully")
+litematica_export(clock_bus, "clock_bus", "../output/clock_bus.litematic")
+print("Saved clock_bus.litematic succesfully")
