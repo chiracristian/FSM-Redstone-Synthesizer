@@ -9,7 +9,7 @@
         "num_outputs": 1
     },
 
-    "inputs_names": [
+    "input_names": [
         {"hold": [0]},
         {"cycle": [1]}
     ],

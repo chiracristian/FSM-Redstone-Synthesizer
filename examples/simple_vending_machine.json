@@ -9,7 +9,7 @@
         "num_outputs": 2
     },
 
-    "inputs_names": [
+    "input_names": [
         {"no_coin": [0, 0]},
         {"inserted_1_dollar": [1, 0]},
         {"inserted_2_dollars": [0, 1]}

@@ -123,3 +123,4 @@ Here is an example of a JSON that implements a Moore FSM that detects the `1101`
 - Add the possibility to change the base blocks in a separate configuration file, without having to edit `src/blocks.py`.
 - Find a more optimal layout for the feedback lines (currently they contribute the biggest delay).
 - Equalize the delays of all the input buses, respectively the feedback lines, to guarantee stable Mealy machines.
+- Develop a GUI for visually designing transition diagrams, removing the need for direct JSON editing.
