@@ -34,7 +34,7 @@ class ProductTermGate(BlockGrid):
                 self.blocks[current_x][1][2] = self.base_block
                 self.blocks[current_x][2][2] = Torch(TorchType.FLOOR)
                 self.blocks[current_x][2][3].north_connection = WireConnection.SIDE
-                self.torches_positions.append((current_x, 2, 2))
+                self.rail_torches_pos.append((current_x, 2, 2))
 
                 # Place the connection, one level lower
                 self.blocks[current_x][0][1] = self.base_block
@@ -76,7 +76,7 @@ class ProductTermGate(BlockGrid):
             if x == size_x - 1:
                 self.blocks[x][2][3].east_connection = WireConnection.NONE
 
-        self.torches_positions: list[tuple[int, int, int]] = []
+        self.rail_torches_pos: list[tuple[int, int, int]] = []
 
         # Now put the input variables pins
         current_x = size_x - 1
@@ -90,7 +90,7 @@ class ProductTermGate(BlockGrid):
             current_x -= 2
 
         # Propagate the signals from the torches
-        for pos in self.torches_positions:
+        for pos in self.rail_torches_pos:
             self.propagate_power_from_torch(pos[0], pos[1], pos[2])
 
         # Put the output torch
@@ -100,6 +100,8 @@ class ProductTermGate(BlockGrid):
         # Turn off the torch if the output rail is energized
         if (self.blocks[self.out_torch_x][2][3].is_energized()):
             self.blocks[self.out_torch_x][1][4].lit = False
+        else:
+            self.torches_pos.append((self.out_torch_x, 1, 4))
 
         # The delay is 2 (1 for input pins, 1 for the output torch)
         self.delay = 2

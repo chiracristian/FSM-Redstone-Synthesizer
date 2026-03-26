@@ -167,3 +167,6 @@ class FSM(BlockGrid):
         y = 5
         z = input_paste_z(last_i) + D_FLIP_FLOP_DEPTH
         self.paste(clock_bus, x, y, z)
+
+        # Propagate all the lit torches from the towers
+        self.propagate_all_torches()

@@ -39,6 +39,9 @@ class BlockGrid:
         
         # Store the total delay of torches and repeaters
         self.delay = 0
+
+        # Store the position of torches (to be propagated)
+        self.torches_pos: list[tuple[int, int, int]] = []
         
     def is_out_of_bounds(self, x: int, y: int, z: int) -> bool:
         return not (0 <= x < self.size[0] and 0 <= y < self.size[1] and 0 <= z < self.size[2])
@@ -86,7 +89,7 @@ class BlockGrid:
         states = block.get_block_states()
 
         for side, (dx, dy, dz) in directions.items():
-            conn_type = states.get(side.value) # pyright: ignore[reportArgumentType]
+            conn_type = states.get(side.value)
 
             nx, ny, nz = 0, 0, 0
             check_down = False
@@ -104,7 +107,7 @@ class BlockGrid:
 
             # Propagate through repeater, if facing correspondingly
             if isinstance(self.blocks[nx][ny][nz], Repeater):
-                if self.blocks[nx][ny][nz].facing == side: # pyright: ignore[reportAttributeAccessIssue]
+                if self.blocks[nx][ny][nz].facing == opposite_direction(side):
                     self.propagate_power_from_repeater(nx, ny, nz)
             
             # Redstone automatically connects down if there is a wire below 
@@ -114,6 +117,10 @@ class BlockGrid:
                     down_block = self.blocks[nx][ny - 1][nz]
                     if isinstance(down_block, Wire):
                         self.propagate_power_through_wires(nx, ny - 1, nz, power - 1)
+
+    def propagate_all_torches(self):
+        for torch_pos in self.torches_pos:
+            self.propagate_power_from_torch(torch_pos[0], torch_pos[1], torch_pos[2])
 
     def propagate_power_from_torch(self, x: int, y: int, z: int):
         block = self.blocks[x][y][z]
@@ -165,9 +172,13 @@ class BlockGrid:
         dx, dy, dz = offsets.get(block.facing, (0, 0, 0))
         nx, ny, nz = x + dx, y, z + dz
 
+        # Propagate at the same height
         if not self.is_out_of_bounds(nx, ny, nz):
-            # Refresh signal to MAX_WIRE_POWER
             self.propagate_power_through_wires(nx, ny, nz, MAX_WIRE_POWER)
+        
+        # Propagate one block higher
+        if not self.is_out_of_bounds(nx, ny + 1, nz):
+            self.propagate_power_through_wires(nx, ny + 1, nz, MAX_WIRE_POWER)
 
     def paste(self, pasted_grid: "BlockGrid", 
               offset_x: int, offset_y: int, offset_z: int,
@@ -202,3 +213,12 @@ class BlockGrid:
                     
                     # Paste the block
                     self.blocks[gx][gy][gz] = block
+
+        # If the pasted region has torches tracked, include them
+        for tx, ty, tz in pasted_grid.torches_pos:
+            # Apply the same translation logic used for blocks
+            master_tx = offset_x + (tx - ox)
+            master_ty = offset_y + (ty - oy)
+            master_tz = offset_z + (tz - oz)
+            
+            self.torches_pos.append((master_tx, master_ty, master_tz))

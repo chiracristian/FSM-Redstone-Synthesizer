@@ -64,6 +64,19 @@ class Directions(Enum):
     EAST = "east"
     WEST = "west"
 
+def opposite_direction(direction: Directions) -> Directions:
+    match direction:
+        case Directions.NORTH:
+            return Directions.SOUTH
+        case Directions.SOUTH:
+            return Directions.NORTH
+        case Directions.EAST:
+            return Directions.WEST
+        case Directions.WEST:
+            return Directions.EAST
+        case _:
+            return Directions.INVALID
+
 class WireConnection(Enum):
     NONE = "none"
     SIDE = "side"
