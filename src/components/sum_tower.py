@@ -33,6 +33,11 @@ class SumTower(BlockGrid):
         for term in expression.terms:
             product_term_gates.append(ProductTermGate(term))
 
+        # For always 0, just produce empty space
+        if not product_term_gates:
+            super().__init__(1, 1, 1)
+            return
+
         gate_width = product_term_gates[0].size[0]
         gate_count = len(product_term_gates)
         input_vars_count = product_term_gates[0].inputs_count
@@ -77,5 +82,6 @@ class SumTower(BlockGrid):
         # Calculate the total delay due to
         # repeaters before vertical wires (1)
         # the vertical wires
+        # the product term gates
         # the output ORing wire
         self.delay = 1 + state_var_wire.delay + product_term_gates[0].delay + downwards_wire.delay
