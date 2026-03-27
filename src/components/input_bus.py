@@ -20,11 +20,11 @@ from block_grid import BlockGrid
 INPUT_BUS_HEIGHT = 4
 
 class InputBus(BlockGrid):
-    def __init__(self, base_block: Block, num_variables: int, pin_idx: int, 
-                 pin_connection_length: int, additional_extend_length: int):
+    def __init__(self, base_block: Block, num_variables: int, num_towers: int,
+                 pin_idx: int, pin_connection_length: int, additional_extend_length: int):
         tower_width = 2 * num_variables - 1 
-        between_towers_width = num_variables - 1
-        towers_width = num_variables * tower_width + between_towers_width
+        between_towers_width = num_towers - 1
+        towers_width = num_towers * tower_width + between_towers_width
 
         size_x = towers_width + additional_extend_length
         size_y = INPUT_BUS_HEIGHT
@@ -36,7 +36,7 @@ class InputBus(BlockGrid):
 
         # Place connection pins
         current_x = size_x - 1 - 2 * pin_idx
-        for tower_idx in range(0, num_variables):
+        for tower_idx in range(0, num_towers):
             # Place the junction
             junctions_x.append(current_x)
             self.blocks[current_x][1][0] = base_block
@@ -59,7 +59,7 @@ class InputBus(BlockGrid):
         next_junction_idx = 1
         for x in range(junctions_x[0] - 1, -1, -1):
             # Skip placing at the junctions
-            if next_junction_idx < num_variables and x == junctions_x[next_junction_idx]:
+            if next_junction_idx < num_towers and x == junctions_x[next_junction_idx]:
                 next_junction_idx += 1
                 continue
 
@@ -71,7 +71,7 @@ class InputBus(BlockGrid):
         max_delay = 0
         bus_delay = 0
         bus_power = MAX_WIRE_POWER
-        next_junction_idx = num_variables
+        next_junction_idx = num_towers
 
         for x in range(0, junctions_x[0] + 1):
             # Decrease the power

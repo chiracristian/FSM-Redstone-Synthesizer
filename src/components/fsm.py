@@ -34,10 +34,11 @@ class FSM(BlockGrid):
 
         num_inputs = transition_table.config.num_inputs
         num_state_vars = transition_table.config.num_state_vars
+        num_outputs = transition_table.config.num_outputs
 
         # Determine the X size of the FSM
         num_tower_pins = num_inputs + num_state_vars
-        num_towers = len(generated_sops.keys())
+        num_towers = num_state_vars + num_outputs
 
         feedback_wires_width = 2 * num_state_vars
 
@@ -45,7 +46,7 @@ class FSM(BlockGrid):
         between_towers_width = num_towers - 1
         towers_width = num_towers * tower_width + between_towers_width
 
-        flip_flops_part_width = (D_FLIP_FLOP_WIDTH + 1) * num_towers
+        flip_flops_part_width = (D_FLIP_FLOP_WIDTH + 1) * num_tower_pins
 
         size_x = feedback_wires_width + towers_width + flip_flops_part_width
 
@@ -58,7 +59,7 @@ class FSM(BlockGrid):
         size_y = max_tower_height + 1
 
         # Determine the Z size of the FSM
-        input_buses_z = 3 * num_towers - 1
+        input_buses_z = 3 * num_tower_pins - 1
         feedback_lines_z = 2 * num_state_vars - 1
         size_z = input_buses_z + SUM_TOWER_DEPTH + feedback_lines_z
 
@@ -101,7 +102,7 @@ class FSM(BlockGrid):
         for i in range(num_tower_pins):
             base_block = (Block(BASE_INPUT_VAR) if i < num_inputs else Block(BASE_STATE_VAR))
             
-            input_bus = InputBus(base_block, num_tower_pins, i, input_pin_length(i), input_extend_length(i))
+            input_bus = InputBus(base_block, num_tower_pins, num_towers, i, input_pin_length(i), input_extend_length(i))
             input_buses.append(input_bus)
 
             input_buses_delay = max(input_buses_delay, input_bus.delay)
@@ -150,15 +151,8 @@ class FSM(BlockGrid):
             in_z = input_paste_z(i+num_inputs)
             self.paste(feedback_lines[i], in_x - D_FLIP_FLOP_WIDTH - 1, 3, in_z - 1)
 
-        # Print delays
-        print(f"Input buses delay: {input_buses_delay}")
-        print(f"Combinational logic delay: {sum_towers_delay}")
-        print(f"State variables feedback delay: {feedback_lines_delay}")
-
-        total_delay = input_buses_delay + sum_towers_delay + feedback_lines_delay
-        print(f"Total delay: {total_delay}")
-
         # Build the clock bus
+        total_delay = input_buses_delay + sum_towers_delay + feedback_lines_delay
         clock_bus = ClockBus(num_tower_pins, total_delay)
 
         # Paste the clock bus
@@ -170,3 +164,12 @@ class FSM(BlockGrid):
 
         # Propagate all the lit torches from the towers
         self.propagate_all_torches()
+
+        # Print delays
+        print(f"\nInput buses delay: {input_buses_delay}")
+        print(f"Combinational logic delay: {sum_towers_delay}")
+        print(f"State variables feedback delay: {feedback_lines_delay}")
+        print(f"Total delay: {total_delay}")
+
+        # Print size
+        print(f"\nSize of the generated build: {size_x}x{size_y}x{size_z}")
