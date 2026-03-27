@@ -30,6 +30,7 @@ class TransitionTableConfig:
     num_outputs: int
 
 class TransitionTable:
+    """Represents a transition table for a FSM"""
     def __init__(self, info: TransitionTableInfo, config: TransitionTableConfig):
         self.info = info
         self.config = config
@@ -39,6 +40,7 @@ class TransitionTable:
 
     @classmethod
     def from_json(cls, file_path: str) -> 'TransitionTable':
+        """Loads a transition table from a JSON file"""
         with open(file_path, 'r') as f:
             data = json.load(f)
         
@@ -92,7 +94,7 @@ class TransitionTable:
 
     @staticmethod
     def _parse_name_map(mapping_list: list[dict]) -> dict[str, list[int]]:
-        # Flattens the JSON name mapping list into a single lookup dictionary.
+        """Flattens the JSON name mapping list into a single lookup dictionary."""
         lookup = {}
         for entry in mapping_list:
             for name, bits in entry.items():
@@ -101,7 +103,7 @@ class TransitionTable:
 
     @staticmethod
     def _validate_row(row, config, file_path):
-        # Internal helper to ensure JSON data matches the defined bit-widths.
+        """Internal helper to ensure JSON data matches the defined bit-widths."""
         if len(row["input"]) != config.num_inputs:
             raise ValueError(f"Input dimension mismatch in {file_path}: expected {config.num_inputs}")
         if len(row["state_t"]) != config.num_state_vars:
@@ -110,7 +112,7 @@ class TransitionTable:
             raise ValueError(f"Output dimension mismatch in {file_path}: expected {config.num_outputs}")
 
     def get_next_state(self, current_state: list[int], inputs: list[int]) -> list[int]:
-        # Lookup delta(s, i)
+        """Lookup the next state for a given current state and inputs."""
         for row in self.rows:
             if row["state_t"] == current_state and row["input"] == inputs:
                 return row["state_next"]

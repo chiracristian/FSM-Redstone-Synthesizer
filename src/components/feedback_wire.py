@@ -19,8 +19,8 @@ from block_grid import BlockGrid
 
 FEEDBACK_WIRE_HEIGHT = 4
 
-# This is meant to be pasted right at the input
 class FeedbackWire(BlockGrid):
+    """To be pasted right at the input of the corresponding D flip-flop"""
     def __init__(self, front_wire_length: int, side_wire_length: int, back_wire_length: int,
                     output_pin_length: int):
         base_block = Block(BASE_STATE_VAR_FEEDBACK)

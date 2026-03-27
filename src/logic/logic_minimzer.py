@@ -23,7 +23,7 @@ from logic.transition_table import TransitionTable
 from logic.sop_expression import *
 
 def synthesize_logic(table: TransitionTable) -> dict[SOPOutput, SOPExpression]:
-    # Returns a dictionary mapping SOPOutput objects to minimized SOPExpressions.
+    """Returns a dictionary mapping SOPOutput objects to minimized SOPExpressions."""
     num_inputs = table.config.num_inputs
     num_state_vars = table.config.num_state_vars
     num_outputs = table.config.num_outputs
@@ -35,7 +35,7 @@ def synthesize_logic(table: TransitionTable) -> dict[SOPOutput, SOPExpression]:
     expressions = {}
 
     for bit_index in range(num_targets):
-        # 1. Create the structured key
+        # Create the structured key
         if bit_index < num_state_vars:
             output_key = SOPOutput(SOPOutputType.NEXT_STATE_VARIABLE, bit_index)
             target_bit_idx = bit_index
@@ -44,7 +44,7 @@ def synthesize_logic(table: TransitionTable) -> dict[SOPOutput, SOPExpression]:
             output_key = SOPOutput(SOPOutputType.EXTERNAL_OUTPUT, idx)
             target_bit_idx = idx
         
-        # 2. Build ON-set as before
+        # Build ON-set as before
         on_set_exprs = []
         for row in table.rows:
             target_bits = row["state_next"] if bit_index < num_state_vars else row["output"]
@@ -56,14 +56,14 @@ def synthesize_logic(table: TransitionTable) -> dict[SOPOutput, SOPExpression]:
                     minterm_lits.append(var if bit == 1 else ~var)
                 on_set_exprs.append(And(*minterm_lits))
         
-        # 3. Minimize
+        # Minimize
         if not on_set_exprs:
             minimized_expr = expr(0) 
         else:
             minimized_results = espresso_exprs(Or(*on_set_exprs))
             minimized_expr = minimized_results[0]
         
-        # 4. Store using the SOPOutput object
+        # Store using the SOPOutput object
         expressions[output_key] = _convert_to_sop(minimized_expr, num_inputs, num_state_vars)
 
     return expressions
@@ -78,7 +78,6 @@ def _convert_to_sop(pyeda_expr, n_in: int, n_st: int) -> SOPExpression:
         sop.add_term(ProductTerm([LiteralState.ABSENT] * n_in, [LiteralState.ABSENT] * n_st))
         return sop
     
-    # We now correctly check against OrOp and AndOp classes
     terms = pyeda_expr.xs if isinstance(pyeda_expr, OrOp) else [pyeda_expr]
     
     for term in terms:
@@ -89,7 +88,6 @@ def _convert_to_sop(pyeda_expr, n_in: int, n_st: int) -> SOPExpression:
         literals = term.xs if isinstance(term, AndOp) else [term]
         
         for lit in literals:
-            # The ultimate safe extraction: cast to string
             # In PyEDA, variables look like 'i0' and complements look like '~i0'
             lit_str = str(lit)
             is_neg = lit_str.startswith('~')

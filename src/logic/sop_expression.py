@@ -26,6 +26,7 @@ class SOPOutputType(Enum):
     EXTERNAL_OUTPUT = auto()
 
 class SOPOutput:
+    """Represents the type and index of an output of synthesized logic"""
     def __init__(self, output_type: SOPOutputType, index: int):
         self.output_type = output_type
         self.index = index
@@ -39,8 +40,8 @@ class SOPOutput:
 class ProductTerm:
     """Represents a single AND gate (e.g., I0 & !Q1 & Q2)"""
     def __init__(self, inputs: list[LiteralState], states: list[LiteralState]):
-        self.inputs = inputs  # Matches the length of num_inputs
-        self.states = states  # Matches the length of num_state_vars
+        self.inputs = inputs
+        self.states = states
 
     def _format_term(self, lits, prefix):
         parts = []
@@ -52,7 +53,6 @@ class ProductTerm:
         return parts
 
     def __repr__(self):
-        # Format states (Q) then inputs (I) as requested
         state_parts = self._format_term(self.states, "Q")
         input_parts = self._format_term(self.inputs, "I")
         
@@ -72,7 +72,7 @@ class SOPExpression:
 
     def __repr__(self) -> str:
         if not self.terms:
-            return "0 (Always False)"
+            return "0"
         
-        # Joins terms with a + to represent the OR plane
+        # Join terms with a + to represent the OR plane
         return " + ".join(repr(t) for t in self.terms)
