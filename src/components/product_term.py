@@ -21,6 +21,8 @@ from logic.sop_expression import ProductTerm, LiteralState
 PRODUCT_TERM_HEIGHT = 3
 PRODUCT_TERM_DEPTH = 5
 
+PRODUCT_TERM_MAX_INPUTS = 14
+
 class ProductTermGate(BlockGrid):
     base_block = Block(BASE_PRODUCT_TERM)
 

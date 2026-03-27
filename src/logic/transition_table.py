@@ -16,6 +16,7 @@
 
 from dataclasses import dataclass
 import json
+from components.product_term import PRODUCT_TERM_MAX_INPUTS
 
 @dataclass
 class TransitionTableInfo:
@@ -55,6 +56,14 @@ class TransitionTable:
             num_state_vars=conf_data.get("num_state_vars", 1),
             num_outputs=conf_data.get("num_outputs", 1)
         )
+
+        # Ensure we have at least one input, one state variable and one output
+        if config.num_inputs < 1 or config.num_state_vars < 1 or config.num_outputs < 1:
+            raise ValueError("There must be at least one input, one state variable and one output")
+        
+        # Check the number of (inputs + state variables)
+        if (config.num_inputs + config.num_state_vars) > PRODUCT_TERM_MAX_INPUTS:
+            raise ValueError(f"The total number of external inputs and state variables can be at most {PRODUCT_TERM_MAX_INPUTS}")
 
         # Create lookup dictionaries from the name mapping lists
         input_map = cls._parse_name_map(data.get("input_names", []))
