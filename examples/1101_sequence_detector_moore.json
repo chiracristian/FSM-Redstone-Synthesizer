@@ -1,11 +1,11 @@
 {
     "info": {
-        "name": "1101_sequence_detector",
-        "description": "A Mealy machine that detects 1101 input sequence and outputs 1 as soon the sequence is detected. Overlapping sequences are accepted."
+        "name": "1101_sequence_detector_moore",
+        "description": "A Moore machine that detects 1101 input sequence and outputs 1 the next clock cycle after being detected. Overlapping sequences are accepted."
     },
     "config": {
         "num_inputs": 1,
-        "num_state_vars": 2,
+        "num_state_vars": 3,
         "num_outputs": 1
     },
 
@@ -14,10 +14,11 @@
         {"enabled_input": [1]}
     ],
     "state_names": [
-        {"initial": [0, 0]},
-        {"entered_1": [0, 1]},
-        {"entered_11": [1, 0]},
-        {"entered_110": [1, 1]}
+        {"initial": [0, 0, 0]},
+        {"entered_1": [0, 0, 1]},
+        {"entered_11": [0, 1, 0]},
+        {"entered_110": [0, 1, 1]},
+        {"entered_1101": [1, 0, 0]}
     ],
     "output_names": [
         {"no_output": [0]},
@@ -35,6 +36,9 @@
         { "input": "enabled_input", "state_t": "entered_11", "state_next": "entered_11", "output": "no_output" },
 
         { "input": "no_input", "state_t": "entered_110", "state_next": "initial", "output": "no_output" },
-        { "input": "enabled_input", "state_t": "entered_110", "state_next": "entered_1", "output": "enabled_output" }
+        { "input": "enabled_input", "state_t": "entered_110", "state_next": "entered_1101", "output": "no_output" },
+
+        { "input": "no_input", "state_t": "entered_1101", "state_next": "initial", "output": "enabled_output" },
+        { "input": "enabled_input", "state_t": "entered_1101", "state_next": "entered_11", "output": "enabled_output" }
     ]
 }

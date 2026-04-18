@@ -1,0 +1,53 @@
+{
+    "info": {
+        "name": "moore_vending_machine_3_dollars",
+        "description": "Moore vending machine. Accepts $1 and $2 coins. Product costs $3. Outputs product and $1 change, if needed"
+    },
+    "config": {
+        "num_inputs": 2,
+        "num_state_vars": 3,
+        "num_outputs": 2
+    },
+
+    "input_names": [
+        {"no_coin": [0, 0]},
+        {"one_dollar_in": [1, 0]},
+        {"two_dollars_in": [0, 1]}
+    ],
+
+    "state_names": [
+        {"zero_dollars":         [0, 0, 0]},
+        {"one_dollar_stored":    [0, 0, 1]},
+        {"two_dollars_stored":   [0, 1, 0]},
+        {"three_dollars_stored": [0, 1, 1]},
+        {"four_dollars_stored":  [1, 0, 0]}
+    ],
+
+    "output_names": [
+        {"no_output": [0, 0]},
+        {"dispense_product_and_change": [1, 1]},
+        {"dispense_product": [1, 0]}
+    ],
+
+    "table": [
+        { "input": "no_coin",        "state_t": "zero_dollars",        "state_next": "zero_dollars",          "output": "no_output" },
+        { "input": "one_dollar_in",  "state_t": "zero_dollars",        "state_next": "one_dollar_stored",     "output": "no_output" },
+        { "input": "two_dollars_in", "state_t": "zero_dollars",        "state_next": "two_dollars_stored",    "output": "no_output" },
+
+        { "input": "no_coin",        "state_t": "one_dollar_stored",   "state_next": "one_dollar_stored",     "output": "no_output" },
+        { "input": "one_dollar_in",  "state_t": "one_dollar_stored",   "state_next": "two_dollars_stored",    "output": "no_output" },
+        { "input": "two_dollars_in", "state_t": "one_dollar_stored",   "state_next": "three_dollars_stored",  "output": "no_output" },
+
+        { "input": "no_coin",        "state_t": "two_dollars_stored",   "state_next": "two_dollars_stored",   "output": "no_output" },
+        { "input": "one_dollar_in",  "state_t": "two_dollars_stored",   "state_next": "three_dollars_stored", "output": "no_output" },
+        { "input": "two_dollars_in", "state_t": "two_dollars_stored",   "state_next": "four_dollars_stored", "output": "no_output" },
+
+        { "input": "no_coin",        "state_t": "three_dollars_stored", "state_next": "zero_dollars",         "output": "dispense_product" },
+        { "input": "one_dollar_in",  "state_t": "three_dollars_stored", "state_next": "one_dollar_stored",    "output": "dispense_product" },
+        { "input": "two_dollars_in", "state_t": "three_dollars_stored", "state_next": "two_dollars_stored",   "output": "dispense_product" },
+
+        { "input": "no_coin",        "state_t": "four_dollars_stored", "state_next": "zero_dollars",          "output": "dispense_product_and_change" },
+        { "input": "one_dollar_in",  "state_t": "four_dollars_stored", "state_next": "one_dollar_stored",     "output": "dispense_product_and_change" },
+        { "input": "two_dollars_in", "state_t": "four_dollars_stored", "state_next": "two_dollars_stored",    "output": "dispense_product_and_change" }
+    ]
+}
