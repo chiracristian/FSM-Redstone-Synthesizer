@@ -1,6 +1,6 @@
 {
     "info": {
-        "name": "moore_vending_machine_3_dollars",
+        "name": "vending_machine_3_dollars_moore",
         "description": "Moore vending machine. Accepts $1 and $2 coins. Product costs $3. Outputs product and $1 change, if needed"
     },
     "config": {

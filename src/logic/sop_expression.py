@@ -26,7 +26,7 @@ class SOPOutputType(Enum):
     EXTERNAL_OUTPUT = auto()
 
 class SOPOutput:
-    """Represents the type and index of an output of synthesized logic"""
+    """Represents the type and index of a synthesized output"""
     def __init__(self, output_type: SOPOutputType, index: int):
         self.output_type = output_type
         self.index = index

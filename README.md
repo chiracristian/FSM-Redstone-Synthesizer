@@ -1,6 +1,6 @@
 # FSM-Redstone-Synthesizer
 
-A tool to automatically synthesize **Finite State Machines (FSM)** as Minecraft Redstone circuits.
+A tool to automatically synthesize **Finite State Machines (FSMs)** as Minecraft Redstone circuits.
 
 Instead of manually wiring the logic for complex Redstone contraptions, you can simply describe your machine's state transitions in a JSON file and this program will generate a control unit for you in a schematic file, that can be easily placed in your Minecraft world.
 
