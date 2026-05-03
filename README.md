@@ -7,9 +7,9 @@ Instead of manually wiring the logic for complex Redstone contraptions, you can 
 ## Features
 - **Logic minimization:** Highly optimized logic is generated using the Espresso algorithm (implemented in the `pyeda` library), to generate logic blocks that implement the combinational logic for calculating the output variables and what the state variables should be on the next rising edge of the clock.
 
-- **Human-readable JSON:** The states, inputs and outputs are defined using string names. So, confusion with bit arrays is avoided.
+- **Human-readable JSON:** The states, inputs and outputs are defined using string names. This eliminates the risk of bit-mapping errors.
 
-- **Generate complete Mealy or Moore machines:** This program can generate Mealy or Moore FSMs. These control units are then meant to be hooked up to other components at the external input and output pins. Note that Mealy outputs may be subject to transient logic hazards (flickering), so manual in-game verification is recommended to ensure timing stability for specific applications.
+- **Generate complete Mealy or Moore machines:** This program can generate Mealy or Moore FSMs. These control units are then meant to be hooked up to other components at the external input and output pins. Note that Mealy outputs may be subject to transient logic hazards (glitches), so manual in-game verification is recommended to ensure timing stability.
 
 - **Export as ready-to-paste schematics:** The generated output files are `.litematic`, and require [Litematica mod](https://modrinth.com/mod/litematica) to be pasted in the world. Currently, only Litematica for Minecraft Java Edition is supported, thanks to the `litemapy` library.
 
@@ -45,7 +45,7 @@ cd FSM-Redstone-Synthesizer
 
 3. To use, launch the `run_container.sh` script, as in this given example:
 ```bash
-./run_container.sh examples/1101_sequence_detector.json output/1101.litematic
+./run_container.sh examples/1101_sequence_detector.json output/1101_detector.litematic
 ```
 
 ## Local installation on Linux
@@ -68,7 +68,7 @@ python3 build_fsm.py examples/1101_sequence_detector.json output/1101_detector.l
 ```
 
 ## Example JSON for defining a FSM
-Here is an example of a JSON that implements a Mealy FSM that detects the `1101` sequence in the input, outputting a `1` as soon as it is detected.
+Here is an example of a JSON that implements a Mealy FSM that detects the `1101` sequence in the input, outputting `1` as soon as it is detected.
 
 ```json
 {
@@ -113,8 +113,34 @@ Here is an example of a JSON that implements a Mealy FSM that detects the `1101`
 }
 ```
 
+Output to `stdout` of running the program with the above specification:
+
+```
+[*] Loading transition table from examples/1101_sequence_detector.json ...
+
+[*] Loaded 1101_sequence_detector
+[*] Description: A Mealy machine that detects 1101 input sequence and outputs 1 as soon the sequence is detected. Overlapping sequences are accepted.
+
+[*] Synthesizing logic and building FSM structure
+Synthesized logic: 
+{
+Q0(t+1): Q0*!Q1 + !Q0*Q1*I0, 
+Q1(t+1): Q0*Q1*I0 + Q0*!Q1*!I0 + !Q0*!Q1*I0, 
+O0: Q0*Q1*I0}
+
+Input buses delay: 1
+Combinational logic delay: 4
+State variables feedback delay: 4
+Total delay: 9
+
+Size of the generated build: 30x13x24
+
+[*] Exporting to output/1101_detector.litematic ...
+[+] Success!
+```
+
 ## Known issues and potential improvements (feel free to contribute!)
-- Supports up to 14 total variables (inputs + state). Current combinational logic towers lack signal repeaters on long input lines, so their width is limited due to signal decay.
+- Supports up to 14 total variables (inputs + state). Current combinational logic towers do not account for signal attenuation on long propagation distances, so their width is limited due to signal decay.
 - The block-storage logic is format-agnostic. So, exporters for vanilla structure blocks or other schematic mods (maybe even some supporting other Minecraft editions, like the Bedrock Edition) could be added.
 - Add the possibility to change the base blocks in a separate configuration file, without having to edit `src/blocks.py`.
 - Find a more optimal layout for the feedback lines (currently they contribute the biggest delay).
